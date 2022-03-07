@@ -1,0 +1,651 @@
+<library>
+<command>
+    <pattern>SaveCode</pattern>
+    <script>
+      SuppressTurnscripts
+      SaveGameCode
+    </script>
+</command>
+
+<command>
+    <pattern>LoadCode</pattern>
+    <script>
+      SuppressTurnscripts
+      JS.LoadGamePrompt ()
+    </script>
+</command>
+
+<function name="SaveGameCode"><![CDATA[
+    // SaveGameCode() Function to collect changeable attributes into a string in order to generate a SaveCode for LoadGameCode to load.
+    // Will not save non-string/non-object lists/dictionaries (with grid_coordinates as an exception), will not save script attributes, will not save script dictionaries, will not save delegate attributes, will not save command patterns, will not save the "look" attribute (as it should not change), and will not save the "description" attribute (as it should not change).
+    // Will not grab any other attributes attached to the "game" object except for game.gameid and game.version. IF YOU WOULD LIKE TO SAVE ANY ADDITIONAL ATTRIBUTES ATTACHED TO "game", YOU WILL NEED TO EDIT THIS FUNCTION TO CALL THEM OUT SPECIFICALLY. I've noted the section below where I would recommend adding custom "game" attributes with a ***
+    // WILL NOT TRACK WHICH TIMERS ARE ENABLED/DISABLED AT TIME OF SAVING! YOU WILL NEED TO EDIT THIS FUNCTION TO CALL OUT ALL YOUR TIMERS SO THAT THE timer.enabled ATTRIBUTE IS SAVED FOR EACH OF THEM! I would recommend adding these to the section below marked with ***
+    SaveString = ""
+    // Set delimiters.
+    // WARNING: D1 or D2 CANNOT be present in any object names, attribute names, or attribute values that you intend to save. Otherwise, the save will not load properly.
+    // WARNING: D3 CANNOT be present in any object names or attribute names, but CAN be present in an attribute's value. This is because D3 MUST be the delimiter used to separate List entries in order to load lists properly
+    // D1 delimiter will separate full object attributes, D2 delimiter will separate the data that comprises an attribute.
+    // D3 is not set by this function, but instead is what the LoadGame() function will assume separates all list entries. As a reminder, by-default Quest will use ; as the List delimiter.
+    D1 = "|"
+    D2 = "$"
+    D3 = ";"
+    D4 = "@"
+    // Save the player's current map before saving
+    // Make sure first two entries are gameid and version (for load function)
+    SaveString = SaveString+"game"+D2+"gameid"+D2+"string"+D2+game.gameid+D1
+    SaveString = SaveString+"game"+D2+"version"+D2+"string"+D2+game.version+D1
+    // Grab current active player (game.pov). This way the LoadGame knows who the player object is and to update its parent last
+    SaveString = SaveString+"game"+D2+"pov"+D2+"object"+D2+game.pov+D1
+    // Record all changable object attributes
+    foreach (o, AllObjects()) {
+      foreach (attributename, GetAttributeNames(o,false)) {
+        objectname = o.name
+        fullname = objectname+"."+attributename
+        att_datatype = ToString(TypeOf(o, attributename))
+        if (not att_datatype="script" and not att_datatype="scriptdictionary" and not att_datatype="dictionary" and not att_datatype="list" and not att_datatype="delegate"and not att_datatype="command pattern" and not attributename="look" and not attributename="description") {
+          if (att_datatype="object") {
+            v = GetAttribute (o, attributename)
+            att_value = v.name
+          }
+          else if (att_datatype="stringlist" or att_datatype="objectlist") {
+            X = ToString(GetAttribute (o, attributename))
+            // Cut off the "List: " string that preceeds its values when you use the ToString() command
+            att_value = Right(X,LengthOf(X)-LengthOf("List: "))
+          }
+          else if (att_datatype="stringdictionary" or att_datatype="objectdictionary") {
+            X = ToString(GetAttribute (o, attributename))
+            // Cut off the "Dictionary: " string that preceeds its values when you use the ToString() command
+            att_value = Right(X,LengthOf(X)-LengthOf("Dictionary: "))
+          }
+          else {
+            att_value = ToString(GetAttribute (o, attributename))
+          }
+          // Check if there are delimiters in any of the names/values. If so, warn the player that their save won't work.
+          if (Instr(objectname,D1)>0 or Instr(objectname,D2)>0 or Instr(objectname,D3)>0 or Instr(objectname,D4)>0) {
+            error ("ERROR: Banned delimiter detected in \""+fullname+"\" object name! Consider editting SaveGameCode function to change delimiters, or renaming object.<br><br>Current banned objectname delimiters:<br>"+D1+"<br>"+D2+"<br>"+D3+"<br>"+D4)
+          }
+          else if (Instr(attributename,D1)>0 or Instr(attributename,D2)>0 or Instr(attributename,D3)>0 or Instr(objectname,D4)>0) {
+            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute.<br><br>Current banned attributename delimiters:<br>"+D1+"<br>"+D2+"<br>"+D3+"<br>"+D4)
+          }
+          else if (Instr(att_value,D1)>0 or Instr(att_value,D2)>0 or Instr(objectname,D4)>0) {
+            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value.<br><br>Current banned attribute value delimiters:<br>"+D1+"<br>"+D2+"<br>"+D4)
+          }
+          SaveString = SaveString+objectname+D2+attributename+D2+att_datatype+D2+att_value+D1
+        }
+      }
+    }
+    foreach (o, AllExits()) {
+      // Assumes the only attribute attached to exits that could change during gameplay is the "locked" attribute
+      foreach (attributename, GetAttributeNames(o,false)) {
+        objectname = o.name
+        fullname = objectname+"."+attributename
+        att_datatype = ToString(TypeOf(o, attributename))
+        if (not att_datatype="script" and not att_datatype="scriptdictionary" and not att_datatype="dictionary" and not att_datatype="list" and not att_datatype="delegate" and not att_datatype="command pattern" and not attributename="look" and not attributename="description") {
+          if (att_datatype="object") {
+            v = GetAttribute (o, attributename)
+            att_value = v.name
+          }
+          else if (att_datatype="stringlist" or att_datatype="objectlist") {
+            X = ToString(GetAttribute (o, attributename))
+            // Cut off the "List: " string that preceeds its values when you use the ToString() command
+            att_value = Right(X,LengthOf(X)-LengthOf("List: "))
+          }
+          else if (att_datatype="stringdictionary" or att_datatype="objectdictionary") {
+            X = ToString(GetAttribute (o, attributename))
+            // Cut off the "Dictionary: " string that preceeds its values when you use the ToString() command
+            att_value = Right(X,LengthOf(X)-LengthOf("Dictionary: "))
+          }
+          else {
+            att_value = ToString(GetAttribute (o, attributename))
+          }
+          // Check if there are delimiters in any of the names/values. If so, warn the player that their save won't work.
+          if (Instr(objectname,D1)>0 or Instr(objectname,D2)>0 or Instr(objectname,D3)>0 or Instr(objectname,D4)>0) {
+            error ("ERROR: Banned delimiter detected in \""+fullname+"\" object name! Consider editting SaveGameCode function to change delimiters, or renaming object.<br><br>Current banned objectname delimiters:<br>"+D1+"<br>"+D2+"<br>"+D3+"<br>"+D4)
+          }
+          else if (Instr(attributename,D1)>0 or Instr(attributename,D2)>0 or Instr(attributename,D3)>0 or Instr(objectname,D4)>0) {
+            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute.<br><br>Current banned attributename delimiters:<br>"+D1+"<br>"+D2+"<br>"+D3+"<br>"+D4)
+          }
+          else if (Instr(att_value,D1)>0 or Instr(att_value,D2)>0 or Instr(objectname,D4)>0) {
+            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value.<br><br>Current banned attribute value delimiters:<br>"+D1+"<br>"+D2+"<br>"+D4)
+          }
+          SaveString = SaveString+objectname+D2+attributename+D2+att_datatype+D2+att_value+D1
+        }
+      }
+    }
+    foreach (turnscript, AllTurnScripts()) {
+      // Check for which turnscripts are enabled/disabled
+      if (GetBoolean(turnscript, "enabled")) {
+        SaveString = SaveString+turnscript.name+D2+"enabled"+D2+"boolean"+D2+"True"+D1
+      }
+      else {
+        SaveString = SaveString+turnscript.name+D2+"enabled"+D2+"boolean"+D2+"False"+D1
+      }
+    }
+    SaveString = SaveString+"game"+D2+"timeelapsed"+D2+"int"+D2+ToString(game.timeelapsed)+D1
+    // *** TO DEVELOPER: Recommend putting timer status and other "game" attributes that can change based on user action during the game in this function below:
+    // The template to save additional attributes is SaveString=SaveString+{string objectname}+D2+{string attributename}+D2+{datatype string}+D2+ToString({attribute value})+D1
+    // For example, to save the "timer.enabled" attribute for a timer named BeeTimer: SaveString=SaveString+"BeeTimer"+D2+"enabled"+D2+"boolean"+D2+ToString(BeeTimer.enabled)+D1
+    // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    // DO NOT APPEND THE SAVESTRING WITH ANY ADDITIONAL ATTRIBUTES BELOW THIS POINT. The game.pov.grid_coordinates and delimiters MUST be added on last in order for the LoadGame() Function to load properly.
+    // Save the player.grid_coordinates so the player's map is saved. Because it is a dictionary of dictionaries, it must be saved in a special way...
+    // grid_coordinates will be saved in form: "StuffBefore|@ObjectOwner$MapAttributeName&%&Key1$Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;|Key2$Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;Lkey3 = Lvalue3:type|"
+    foreach (o, AllObjects()) {
+      foreach (attributename, GetAttributeNames(o,false)) {
+        objectname = o.name
+        fullname = objectname+"."+attributename
+        att_datatype = ToString(TypeOf(o, attributename))
+        if (att_datatype="dictionary" and StartsWith(attributename,"saved_map_for_")) {
+          // ASSUMES THAT ANY SAVED MAP DATA (for teleporting and keeping your map) STARTS WITH 'saved_map_for'. This follows the naming convention recommended by https://docs.textadventures.co.uk/quest/showing_a_map.html
+          SaveString = SaveString + D4 + objectname + D2 + attributename + "&%&"
+          foreach (UKey, GetAttribute(o, attributename)) {
+            SaveString = SaveString+UKey+D2
+            UVal = DictionaryItem(GetAttribute(o, attributename), UKey)
+            foreach (Lkey, UVal) {
+              Lval = DictionaryItem(UVal, Lkey)
+              Lval = ToString(Lval)+":"+ToString(TypeOf(Lval))
+              SaveString = SaveString+Lkey+" = "+ToString(Lval)+D3
+            }
+            SaveString = Left(SaveString,(LengthOf(SaveString)-1))+D1
+          }
+        }
+        else if (att_datatype="dictionary" and attributename="grid_coordinates") {
+          // Save the current map. Typically this is game.pov.grid_coordinates, but if player character can change, there may be multiple occurences of 'grid_coordinates'. Save them all.
+          SaveString = SaveString + D4 + objectname + D2 + attributename + "&%&"
+          foreach (UKey, GetAttribute(o, attributename)) {
+            SaveString = SaveString+UKey+D2
+            UVal = DictionaryItem(GetAttribute(o, attributename), UKey)
+            foreach (Lkey, UVal) {
+              Lval = DictionaryItem(UVal, Lkey)
+              Lval = ToString(Lval)+":"+ToString(TypeOf(Lval))
+              SaveString = SaveString+Lkey+" = "+ToString(Lval)+D3
+            }
+            SaveString = Left(SaveString,(LengthOf(SaveString)-1))+D1
+          }
+        }
+      }
+    }
+    // Append the end of the SaveString with the delimiters used, so LoadGame() knows what delimiter maps to what...
+    SaveString = SaveString+D1+D2+D3+D4
+    // msg for Debugging:
+    // msg (SaveString+"<br><br>")
+    // Create save code and present to player in textbox
+    JS.CreateSaveCode (SaveString)
+    JS.setCss ("#msgbox", "word-wrap:break-word;max-height:250px;")
+]]></function>
+  
+  
+<function name="LoadGameCode" parameters="SaveGameCodeDecoded"><![CDATA[
+    // LoadGameCode(SaveGameCodeDecoded) function to load a SaveGameCode save-state. Takes a decoded (not in base64) SaveGameCode created by SaveGameCode and decoded from base64 by java functions. Requires SaveLoadJavaCode.js in order to function!
+    SuppressTurnscripts
+    // NOTE: Requires either JS.LoadSaveCode to be called with a SaveGameCode as an input parameter, or JS.LoadGamePrompt to be called elsewhere (i.e. by a custom "LoadGame" command), which will make a popup appear for the player to enter their SaveCode, eventually piping it to this function.
+    // TO DEVELOPER: Set the OldestAllowedVersion to the oldest compatible game version that a player can load saved game data from. Setting OldestAllowedVersion=0 will essentially allow the player to load saves from any old version. Setting OldestAllowedVersion=game.version will make it so the player can ONLY load saves from the current game version.
+    OldestAllowedVersion = 0.0
+    // TO DEVELOPER: Setting DebugMode to 'True' will enable the printing of debug messages to the screen when running. Very useful for testing out the function if you've made any custom edits for compatibility or the like.
+    DebugMode = False
+    // Msg for Debugging:
+    if (DebugMode) {
+      msg ("<br>Full decoded SaveCode:<br>"+SaveGameCodeDecoded)
+    }
+    // Set up other variables for later
+    bla => {
+    }
+    upgradesave = False
+    Proceed = False
+    SkippedAttList = ""
+    // Check for a "✓" at the end of the SaveGameCodeDecoded string. If it's there, then the function knows this savecode is for an older game version. "But how do we know that ✓ isn't being used as a custom delimiter?" Because ✓ cannot be converted to base64, so the user would get an error trying to make a SaveGameCode with ✓ as a delimiter.
+    CheckForCheck = Right(SaveGameCodeDecoded,1)
+    if (CheckForCheck="✓") {
+      upgradesave = True
+      SaveGameCodeDecoded = Left(SaveGameCodeDecoded, LengthOf(SaveGameCodeDecoded)-1)
+    }
+    // Retrieve delimiters from end of SaveGameCodeDecoded
+    Dls = Right(SaveGameCodeDecoded,4)
+    D1 = Mid (Dls, 1, 1)
+    D2 = Mid (Dls, 2, 1)
+    D3 = Mid (Dls, 3, 1)
+    D4 = Mid (Dls, 4, 1)
+    // Remove delimiters from end of SaveGameCode also remove the final D1 delimiter from the grid_coordinates string
+    SaveCode = Left(SaveGameCodeDecoded, LengthOf(SaveGameCodeDecoded)-(LengthOf(Dls)+1))
+    // Extract the player.grid_coordinates info separately from the rest of the savecode. It has special rules for decoding it since it is a dictionary of dictionaries.
+    GridGInfo = Right(SaveCode, LengthOf(SaveCode)-Instr(SaveCode, D4))
+    if (DebugMode) {
+      msg ("<br>GridGInfo: "+GridGInfo)
+    }
+    // Remove player.grid_coordinates info from end of SaveCode also remove the final D1 & D4 delimiter separating the grid_coordinates from the rest of the attributes
+    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(GridGInfo)+2))
+    if (DebugMode) {
+      msg ("<br>SaveCode w/o player.grid_coordinate info:<br>"+SaveCode)
+    }
+    // Note: if the "SaveCode" begins with the word "Error:", then an error was encountered when trying to convert from Base64.
+    // Extract SaveCode game info. This includes the gameid, game version, and current player (game.pov)...
+    GameIdDelim = Instr (SaveCode, D1)
+    GameVersionDelim = Instr(GameIdDelim+1,SaveCode,D1)
+    GamePOVDelim = Instr(GameVersionDelim+1,SaveCode,D1)
+    GameInfo = Split(Left(SaveCode,GamePOVDelim-1),D1)
+    GameIdObjectEl = ListItem (GameInfo,0)
+    GameIdElements = Split(GameIdObjectEl,D2)
+    Loaded_GameId = ListItem (GameIdElements, 3)
+    GameVerObjectEl = ListItem (GameInfo,1)
+    GameVerElements = Split(GameVerObjectEl,D2)
+    VersionString = ListItem (GameVerElements, 3)
+    Loaded_GameVersion = ToDouble(VersionString)
+    GamePOVObjectEl = ListItem (GameInfo,2)
+    GamePOVElements = Split(GamePOVObjectEl,D2)
+    GamePOVName = ListItem (GamePOVElements, 3)
+    if (StartsWith(GamePOVName,"Object: ")) {
+      GamePOVName = Right(GamePOVName,LengthOf(GamePOVName)-LengthOf("Object: "))
+    }
+    GamePOVObject = GetObject (GamePOVName)
+    GamePOVParent = GetAttribute (GamePOVObject, "parent")
+    // Check that the save belongs to this game by comparing gameIds
+    if (not Loaded_GameId=game.gameid) {
+      error ("Load Aborted: SaveCode not identified by this game. GameID mismatch.")
+    }
+    else {
+      // Compare version of game in SaveCode to version of game loading it
+      ThisGame_GameVersion = ToDouble(game.version)
+	  if (not TypeOf(OldestAllowedVersion)="double") {
+        OldestAllowedVersion_Double = ToDouble(OldestAllowedVersion)
+	  }
+	  else {
+	    OldestAllowedVersion_Double = OldestAllowedVersion
+	  }
+      // If upgrading from an old game version, then arbitrarily set Loaded_GameVersion to ThisGameVersion to proceed.
+      if (Loaded_GameVersion<ThisGame_GameVersion) {
+        if (upgradesave = False) {
+          if (OldestAllowedVersion_Double<=Loaded_GameVersion) {
+            msg ("WARNING! The SaveCode you are attempting to load is from an older game version.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br><br>Would you like to attempt to upgrade this save to the current version? (Results may vary...)")
+            // Need to save SaveGameCodeDecoded as an attribute temporarily so it can be used by the ShowMenu function
+            create ("SaveGameDecodedObj")
+            set (SaveGameDecodedObj, "value", SaveGameCodeDecoded)
+            ShowMenu ("", Split("Yes;No"), false) {
+              switch (result) {
+                case ("Yes") {
+                  SuppressTurnscripts
+                  msg ("Save code identified! Proceeding with load, please wait...")
+                  OlderSaveCode = SaveGameDecodedObj.value+"✓"
+                  LoadGameCode (OlderSaveCode)
+                  destroy ("SaveGameDecodedObj")
+                }
+                case ("No") {
+                  SuppressTurnscripts
+                  msg ("Load Aborted.")
+                  destroy ("SaveGameDecodedObj")
+                }
+              }
+            }
+          }
+          else {
+            error ("ERROR: The SaveCode you are attempting to load is from an INCOMPATIBLE older game version, and thus cannot be loaded by this version of the game.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Oldest Compatible Version: v"+ToString(OldestAllowedVersion)+"<br><br>Loading aborted...")
+          }
+        }
+        else {
+          msg ("Applying savecode from older version...")
+          Proceed = True
+        }
+      }
+      else if (Loaded_GameVersion>ThisGame_GameVersion) {
+        error ("ERROR: The SaveCode you are attempting to load is from a newer version of this game and is not compatible.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Please try a different SaveCode or use an updated game file.<br><br>Load aborted.")
+      }
+      else {
+        msg ("Proceeding with load...")
+        Proceed = True
+      }
+      if (Proceed=True) {
+        player.grid_coordinates = null
+        // Split the save code up into all objects. Then parse through the value of each object attribute
+        SavedObjectList = Split(SaveCode, D1)
+        foreach (o, SavedObjectList) {
+          Skip_Att = False
+          objelements = Split(o, D2)
+          objectname = ListItem (objelements, 0)
+          object = GetObject (objectname)
+          attributename = ListItem (objelements, 1)
+          fullname = objectname+"."+attributename
+          preload_att_value = GetAttribute (object, attributename)
+          att_datatype = ListItem (objelements, 2)
+          if (ListCount(objelements)=3) {
+            att_value = ""
+          }
+          else {
+            att_value = ListItem (objelements, 3)
+          }
+          // Check that the attribute is supported
+          if (not att_datatype="string" and not att_datatype="boolean" and not att_datatype="object" and not att_datatype="int" and not att_datatype="double" and not att_datatype="stringlist" and not att_datatype="objectlist" and not att_datatype="stringdictionary" and not att_datatype="objectdictionary") {
+            msg ("WARNING! Unsupported datatype \""+att_datatype+"\" detected in SaveCode attribute \""+fullname+"\"! Skipping and moving on to next attribute...")
+            Skip_Att = True
+            SkippedAttList = SkippedAttList+fullname+"<br>"
+          }
+          // Convert the string attribute value and convert it to the datatype that it actually needs to be. This att_value_obj variable will also be directly compared to preload_att_value to determine if the pre- and post- load values are equal or not...
+          att_value_obj = att_value
+          if (att_datatype="object") {
+            if (StartsWith(att_value,"Object: ")) {
+              att_value_obj = GetObject(Right(att_value,LengthOf(att_value)-LengthOf("Object: ")))
+            }
+            else {
+              att_value_obj = GetObject(att_value)
+            }
+          }
+          else if (att_datatype="boolean") {
+            if (att_value="True") {
+              att_value_obj = True
+            }
+            else {
+              att_value_obj = False
+            }
+          }
+          else if (att_datatype="int") {
+            att_value_obj = ToInt(att_value)
+          }
+          else if (att_datatype="double") {
+            att_value_obj = ToDouble(att_value)
+          }
+          else if (att_datatype="stringlist") {
+            if (att_value="") {
+              att_value_obj = NewStringList()
+            }
+            else {
+              att_value_obj = Split (att_value, D3)
+              // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
+              list remove (att_value_obj, " ")
+            }
+          }
+          else if (att_datatype="objectlist") {
+            if (att_value="") {
+              att_value_obj = NewObjectList()
+            }
+            else {
+              att_value_obj = NewObjectList()
+              objlistlist = Split (att_value, D3)
+              foreach (olt, objlistlist) {
+                // Need to remove the "Object: " that will preceed each entry, and turn the string entry into the actual object before re-adding to list. We put it into the following "if" statement in order to exclude the blank list entry that gets created at the end of the list by loading
+                if (StartsWith(olt,"Object: ")) {
+                  value = GetObject(Right(olt,LengthOf(olt)-LengthOf("Object: ")))
+                  if (not value=null) {
+                    list add (att_value_obj, value)
+                  }
+                  else {
+                    msg ("WARNING! Object \""+olt+"\" detected in saved objectlist \""+fullname+"\" does not exist! Object \""+olt+"\" not added to list! Loaded game may not work properly!")
+                    SkippedAttList = SkippedAttList+"Objectlist '"+fullname+"' item: "+olt+"<br>"
+                  }
+                }
+              }
+            }
+          }
+          else if (att_datatype="stringdictionary") {
+            if (att_value="") {
+              att_value_obj = NewStringDictionary()
+            }
+            else {
+              att_value_obj = NewStringDictionary()
+              // Add dictionary values from SaveGame
+              dictrows = Split(att_value, ";")
+              foreach (kv, dictrows) {
+                if (DebugMode) {
+                  msg ("StringDict '"+fullname+"' key-value: "+ToString(kv))
+                }
+                KeyValList = Split(kv," = ")
+                key = ListItem(KeyValList, 0)
+                value = ListItem(KeyValList, 1)
+                DictionaryAdd (att_value_obj, key, value)
+              }
+            }
+          }
+          else if (att_datatype="objectdictionary") {
+            if (att_value="") {
+              att_value_obj = NewObjectDictionary()
+            }
+            else {
+              att_value_obj = NewObjectDictionary()
+              dictrows = Split(att_value, ";")
+              foreach (kv, dictrows) {
+                if (DebugMode) {
+                  msg ("ObjDict  '"+fullname+"' key-value: "+ToString(kv))
+                }
+                KeyValList = Split(kv," = ")
+                key = ListItem(KeyValList, 0)
+                obj = ListItem(KeyValList, 1)
+                if (StartsWith(obj,"Object: ")) {
+                  value = GetObject(Right(value,LengthOf(value)-LengthOf("Object: ")))
+                }
+                else {
+                  value = obj
+                }
+                if (not value=null) {
+                  DictionaryAdd (att_value_obj, key, value)
+                }
+                else {
+                  msg ("WARNING! Object \""+obj+"\" detected in saved objectdictionary \""+fullname+"\" does not exist! Object \""+obj+"\" not added to dictionary! Loaded game may not work properly!")
+                  SkippedAttList = SkippedAttList+"Objectdictionary '"+fullname+"' item: "+olt+"<br>"
+                }
+              }
+            }
+          }
+          if (objectname=GamePOVName and attributename="parent") {
+            // Check that the attribute is NOT game.pov.parent. If so, we want to make sure that gets updated last
+            Skip_Att = True
+            GamePOVParent = att_value_obj
+          }
+          // Make sure the object you are trying to add/update the attribute to exists, otherwise you'd get an error trying to update/create its attribute. Also, don't update the game.version or game.pov: The game.version should not be updated from the savecode if you're loading from a previous version, and the game.pov is updated last.
+          if (not Equal(object,null) and not Equal(preload_att_value,null) and not Equal(att_value_obj,null) and not fullname="game.gameid" and not fullname="game.version" and not fullname="game.pov" and not Skip_Att=True) {
+            // Msgs for debugging:
+            if (DebugMode) {
+              msg ("objectname="+objectname)
+              msg ("attributename="+attributename)
+              msg ("att_datatype="+att_datatype)
+              msg ("preload_att_value="+ToString(preload_att_value))
+              msg ("preload_att_datatype="+TypeOf(preload_att_value))
+              msg ("att_value="+ToString(att_value))
+              msg ("att_value_obj="+ToString(att_value_obj))
+              msg ("isEqual att_value=preload_att_value?: "+ToString(Equal(att_value,preload_att_value)))
+              msg ("isEqual att_value_obj=preload_att_value?: "+ToString(Equal(att_value_obj,preload_att_value)))
+              msg ("isEqual ToString(att_value_obj)=ToString(preload_att_value)?: "+ToString(Equal(ToString(att_value_obj),ToString(preload_att_value))))
+              msg ("<br>")
+            }
+            // If attributes are already equal to those in the savecode, no need to change them. Else, change 'em.
+            if (not Equal(att_value,preload_att_value) and not Equal(att_value_obj,preload_att_value) and not Equal(ToString(att_value_obj),ToString(preload_att_value))) {
+              if (DebugMode) {
+                msg ("Updating attribute: "+fullname+"<br><br>")
+              }
+              // Check if attribute has an associated change script. If so, this section will make sure that setting the attribute on load WON'T activate its associate turnscript
+              cha = "changed" + attributename
+              if (HasAttribute (object, cha)) {
+                // If the attribute DOES have an associated change script, temporarily blank it out so it does not execute during loading
+                scr = GetAttribute (object, cha)
+                set (object, cha, bla)
+              }
+              // Update the attributes in the game with those from the SaveCode...
+              if (att_datatype="boolean") {
+                set (object, attributename, att_value_obj)
+              }
+              else if (att_datatype="int") {
+                set (object, attributename, att_value_obj)
+              }
+              else if (att_datatype="double") {
+                set (object, attributename, att_value_obj)
+              }
+              else if (att_datatype="object") {
+                set (object, attributename, att_value_obj)
+              }
+              else if (att_datatype="stringlist" or att_datatype="objectlist" or att_datatype="stringdictionary" or att_datatype="objectdictionary") {
+                // NOTE TO DEVELOPER:
+                // Alter the following logic below to fit your needs. Especially important to make sure this works properly for YOUR game for compatibility between game versions!
+                // If ReplaceContents = True, then any list or dictionary in your game will be COMPLETELY REPLACED by its corresponding list/dictionary from the savecode.
+                // If ReplaceContents = False, then the list/dictionary contents in the SaveCode will be ADDED to the existing corresponding list/dictionary. NOTE: When adding to an existing list/dict, the code, as-written, will REMOVE ANY DUPLICATES from the lists/dictionaries! ALSO, be careful where you allow LoadGame() to be called in cases where ReplaceContents=False, ESPECIALLY if the list/dict contents can change through the course of the game! Calling this LoadGameCode function only from a titlescreen (before any lists/dictionaries have changed), for instance, may be one possible way to account for this.
+                // ReplaceContents=True by default, but this may not be desirable in all cases (i.e. if you updated the contents of a permanent dictionary/list between versions), so it is up to YOU to ensure this section behaves as you want it to. Remember that the "object" and "attributename" variables exist at this point to call out specific list/dictionary objects.
+                if (upgradesave = True) {
+                  // This section will trigger if the player is loading a save from a previous game version
+                  ReplaceContents = True
+                }
+                else {
+                  // If this savecode is NOT coming from a previous game version, then I assume it is safe to completely replace the existing dictionary with the saved one.
+                  ReplaceContents = True
+                }
+                if (att_datatype="stringlist") {
+                  if (ReplaceContents = True) {
+                    // Completely replace stringlist contents with those found in the SaveCode
+                    set (object, attributename, att_value_obj)
+                  }
+                  else {
+                    // Add the contents of the saved stringlist TO the existing stringlist in-game
+                    FinalList = NewStringList()
+                    // Retrieve the contents of the existing list
+                    PreLoadList = preload_att_value
+                    CombinedList = ListCombine (PreLoadList, att_value_obj)
+                    // Remove duplicates
+                    CompactList = ListCompact (CombinedList)
+                    // CompactList will be a generic "list" type object, need to convert it back to a stringlist...
+                    foreach (olt, CompactList) {
+                      list add (FinalList, olt)
+                    }
+                    set (object, attributename, FinalList)
+                  }
+                }
+                else if (att_datatype="objectlist") {
+                  if (ReplaceContents = True) {
+                    // Completely replace objectlist contents with those found in the SaveCode
+                    set (object, attributename, att_value_obj)
+                  }
+                  else {
+                    // Add the contents of the saved objectlist TO the existing objectlist in-game
+                    // Retrieve the contents of the existing list
+                    PreLoadList = preload_att_value
+                    CombinedList = ListCombine (PreLoadList, att_value_obj)
+                    // Remove duplicates
+                    FinalList = ObjectListCompact (CombinedList)
+                    set (object, attributename, FinalList)
+                  }
+                }
+                else if (att_datatype="stringdictionary") {
+                  if (ReplaceContents = True) {
+                    // Then completely overwrite existing stringdictionary contents with those in the savecode
+                    set (object, attributename, att_value_obj)
+                    Dummy = NewStringDictionary()
+                  }
+                  else {
+                    // Add the contents of the saved stringdictionary TO the existing stringdictionary in-game
+                    Dummy = preload_att_value
+                    // Add dictionary values from SaveGame
+                    dictrows = Split(att_value, ";")
+                    foreach (kv, dictrows) {
+                      KeyValList = Split(kv," = ")
+                      key = ListItem(KeyValList, 0)
+                      value = ListItem(KeyValList, 1)
+                      DictionaryAdd (Dummy, key, value)
+                    }
+                    set (object, attributename, Dummy)
+                  }
+                }
+                else if (att_datatype="objectdictionary") {
+                  if (upgradesave = False) {
+                    // Then completely overwrite existing objectdictionary contents with those in the savecode
+                    set (object, attributename, att_value_obj)
+                  }
+                  else {
+                    // Add the contents of the saved objectdictionary TO the existing objectdictionary in-game
+                    Dummy = preload_att_value
+                    // Add dictionary values from SaveGame
+                    dictrows = Split(att_value, ";")
+                    foreach (kv, dictrows) {
+                      KeyValList = Split(kv," = ")
+                      key = ListItem(KeyValList, 0)
+                      value = ListItem(KeyValList, 1)
+                      if (StartsWith(value,"Object: ")) {
+                        value = GetObject(Right(value,LengthOf(value)-LengthOf("Object: ")))
+                      }
+                      DictionaryAdd (Dummy, key, value)
+                    }
+                    set (object, attributename, Dummy)
+                  }
+                }
+              }
+              else if (att_datatype="string") {
+                set (object, attributename, att_value)
+              }
+              else {
+                error ("ERROR: Unsupported object type detected in SaveCode: "+fullname+" of "+att_datatype+" datatype.")
+              }
+              if (HasAttribute (object, cha)) {
+                // If a change script exists for this attribute, set change script back to original value after attribute has been changed
+                set (object, cha, scr)
+                scr => {
+                }
+              }
+            }
+          }
+        }
+        // Extract and update map data from saved grid_coordinates. Because grid_coordinates is a dictionary of dictionaries, it needed to be saved in a special way. Thus, it needs to be loaded in a special way as well.
+        // If D1=|,D2=$,D3=;,and D4=@, then grid_coordinates will be saved in form: "ObjectOwner$MapAttributeName&%&Key1$Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;|Key2$Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;Lkey3 = Lvalue3:type|" etc.
+        AllSavedGrids = Split(GridGInfo,D4)
+        if (DebugMode) {
+          msg ("<br>AllSavedGrids: "+ToString(AllSavedGrids))
+        }
+        foreach (A, AllSavedGrids) {
+          UDictionary = NewDictionary()
+          ItemAndValue = Split(A,"&%&")
+          ObjAndAtt = ListItem(ItemAndValue,0)
+          ObjAndAtt = Split(ObjAndAtt,D2)
+          objectname = ListItem(ObjAndAtt,0)
+          attributename = ListItem(ObjAndAtt,1)
+          object = GetObject(objectname)
+          GridVals = ListItem(ItemAndValue,1)
+          GridVals = Split(GridVals,D1)
+          foreach (B, GridVals) {
+            UKeyAndUVal = Split(B,D2)
+            UKey = ListItem(UKeyAndUVal,0)
+            UVal = ListItem(UKeyAndUVal,1)
+            UVal = Split(UVal,D3)
+            LDictionary = NewDictionary()
+            foreach (C, UVal) {
+              LkeyAndLval = Split(C," = ")
+              Lkey = ListItem(LkeyAndLval,0)
+              LvalAndType = ListItem(LkeyAndLval,1)
+              LvalAndType = Split(LvalAndType,":")
+              Lval_str = ListItem(LvalAndType,0)
+              LType = ListItem(LvalAndType,1)
+              if (LType="int") {
+                Lval = ToInt(Lval_str)
+              }
+              else if (LType="double") {
+                Lval = ToDouble(Lval_str)
+              }
+              else if (LType="boolean") {
+                if (Lval_str="True") {
+                  Lval = True
+                }
+                else {
+                  Lval = False
+                }
+              }
+              else {
+                error ("ERROR: Unsupported datatype found in "+objectname+"."+attributename+"! Datatype '"+LType+"' not supported!")
+              }
+              DictionaryAdd (LDictionary, Lkey, Lval)
+            }
+            DictionaryAdd (UDictionary, UKey, LDictionary)
+          }
+          if (DebugMode) {
+            msg ("<br>"+objectname+"."+attributename+" UDictionary: "+ToString(UDictionary))
+          }
+          set (object, attributename, UDictionary)
+        }
+        msg ("Load complete!")
+        if (DebugMode) {
+          msg ("Skipped Attributes:<br>"+SkippedAttList)
+        }
+        // Finally, update game.pov.parent and game.pov
+        wait {
+          set (GamePOVObject, "parent", GamePOVParent)
+          game.pov = GamePOVObject
+          // player.grid_coordinates = null
+          JS.Grid_ClearAllLayers ()
+          Grid_Redraw
+          Grid_DrawPlayerInRoom (game.pov.parent)
+          ClearScreen
+          ShowRoomDescription
+        }
+      }
+    }
+]]></function>
+<javascript src="SaveLoadJavaCode.js" />
+</library>
