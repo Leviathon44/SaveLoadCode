@@ -172,7 +172,6 @@
     // *** TO DEVELOPER: Recommend putting timer status and other "game" attributes that can change based on user action during the game in this function below:
     // The template to save additional attributes is SaveString=SaveString+{string objectname}+D2+{string attributename}+D2+{datatype string}+D2+ToString({attribute value})+D1
     // For example, to save the "timer.enabled" attribute for a timer named BeeTimer: SaveString=SaveString+"BeeTimer"+D2+"enabled"+D2+"boolean"+D2+ToString(BeeTimer.enabled)+D1
-    SaveString = SaveString+"game"+D2+"Time"+D2+TypeOf(game.Time)+D2+ToString(game.Time)+D1
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
     // DO NOT APPEND THE SAVESTRING WITH ANY ADDITIONAL ATTRIBUTES BELOW THIS POINT. The game.pov.grid_coordinates, Created/Destroyed objectlist, and delimiters MUST be added on last in order for the LoadGame() Function to load properly.
     // Save the player.grid_coordinates so the player's map is saved. Because it is a dictionary of dictionaries, it must be saved in a special way...
