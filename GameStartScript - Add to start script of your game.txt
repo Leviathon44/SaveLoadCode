@@ -1,0 +1,17 @@
+  <!--
+  If you are viewing this on GitHub and want to add it to your game,
+  copy and paste the code below to your game's Start script! 
+  
+  For more info, see https://github.com/Leviathon44/SaveLoadCode/wiki#how-do-i-install-it
+  -->
+
+// Initialization script for SaveLoadCode functionality...
+// Create a list of all object and exit names present in game at start. This way we can keep track of which objects/exits the player has created/destroyed while playing by comparing to this list when saving/loading.
+set (game, "StartingObjStrList", NewStringList ())
+foreach (startobj, AllObjects()) {
+  list add (game.StartingObjStrList, startobj.name)
+}
+foreach (startobj, AllExits()) {
+  list add (game.StartingObjStrList, startobj.name)
+}
+// End of SaveLoadCode initialization script

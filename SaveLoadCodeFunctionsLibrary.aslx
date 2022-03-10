@@ -1,4 +1,19 @@
 <library>
+  <!--
+  If you are viewing this on GitHub and want to download it, right click on the RAW button
+  just above, and select "Save link as..."
+  -->
+
+  
+  <!--
+  SaveLoadCode v2.0
+  Quest version: 5.8
+  Written by: Leviathon, 2022
+  
+  Tutorial and notes here:
+  https://github.com/Leviathon44/SaveLoadCode/wiki
+  -->
+  
 <command>
     <pattern>SaveCode</pattern>
     <script>
@@ -21,6 +36,8 @@
     // Will not grab any other attributes attached to the "game" object except for game.gameid and game.version. IF YOU WOULD LIKE TO SAVE ANY ADDITIONAL ATTRIBUTES ATTACHED TO "game", YOU WILL NEED TO EDIT THIS FUNCTION TO CALL THEM OUT SPECIFICALLY. I've noted the section below where I would recommend adding custom "game" attributes with a ***
     // WILL NOT TRACK WHICH TIMERS ARE ENABLED/DISABLED AT TIME OF SAVING! YOU WILL NEED TO EDIT THIS FUNCTION TO CALL OUT ALL YOUR TIMERS SO THAT THE timer.enabled ATTRIBUTE IS SAVED FOR EACH OF THEM! I would recommend adding these to the section below marked with ***
     SaveString = ""
+    CreatedObj = NewStringList()
+    DestroyedObj = NewStringList()
     // Set delimiters.
     // WARNING: D1 or D2 CANNOT be present in any object names, attribute names, or attribute values that you intend to save. Otherwise, the save will not load properly.
     // WARNING: D3 CANNOT be present in any object names or attribute names, but CAN be present in an attribute's value. This is because D3 MUST be the delimiter used to separate List entries in order to load lists properly
@@ -38,8 +55,20 @@
     SaveString = SaveString+"game"+D2+"pov"+D2+"object"+D2+game.pov+D1
     // Record all changable object attributes
     foreach (o, AllObjects()) {
-      foreach (attributename, GetAttributeNames(o,false)) {
-        objectname = o.name
+      objectname = o.name
+      // Check to see if object was created by player mid-game by comparing to the objectlist at start of game
+      if (not ListContains(game.StartingObjStrList, objectname)) {
+        // Then object was created by player. Double-check that it isn't already in CreatedObj list. If not, add it.
+        if (not ListContains(CreatedObj, objectname)) {
+          list add (CreatedObj, objectname)
+        }
+        // If the object was created mid-game, then we might want to capture additional inherited type info to help when it gets recreated on load...
+        IncludeTypeFlag = True
+      }
+      else {
+        IncludeTypeFlag = False
+      }
+      foreach (attributename, GetAttributeNames(o,IncludeTypeFlag)) {
         fullname = objectname+"."+attributename
         att_datatype = ToString(TypeOf(o, attributename))
         if (not att_datatype="script" and not att_datatype="scriptdictionary" and not att_datatype="dictionary" and not att_datatype="list" and not att_datatype="delegate"and not att_datatype="command pattern" and not attributename="look" and not attributename="description") {
@@ -75,9 +104,20 @@
       }
     }
     foreach (o, AllExits()) {
-      // Assumes the only attribute attached to exits that could change during gameplay is the "locked" attribute
-      foreach (attributename, GetAttributeNames(o,false)) {
-        objectname = o.name
+      objectname = o.name
+      // Check to see if exit was created by player mid-game by comparing to the objectlist at start of game
+      if (not ListContains(game.StartingObjStrList, objectname)) {
+        // Then object was created by player. Double-check that it isn't already in CreatedObj list. If not, add it.
+        if (not ListContains(CreatedObj, objectname)) {
+          list add (CreatedObj, objectname)
+        }
+        // If the object was created mid-game, then we might want to capture additional inherited type info to help when it gets recreated on load...
+        IncludeTypeFlag = True
+      }
+      else {
+        IncludeTypeFlag = False
+      }
+      foreach (attributename, GetAttributeNames(o,IncludeTypeFlag)) {
         fullname = objectname+"."+attributename
         att_datatype = ToString(TypeOf(o, attributename))
         if (not att_datatype="script" and not att_datatype="scriptdictionary" and not att_datatype="dictionary" and not att_datatype="list" and not att_datatype="delegate" and not att_datatype="command pattern" and not attributename="look" and not attributename="description") {
@@ -121,12 +161,20 @@
         SaveString = SaveString+turnscript.name+D2+"enabled"+D2+"boolean"+D2+"False"+D1
       }
     }
+    // Determine if any objects were destroyed by the player since game start...
+    foreach (objectname, game.StartingObjStrList) {
+      IsThere = GetObject(objectname)
+      if (Equal(IsThere,null)) {
+        list add (DestroyedObj, objectname)
+      }
+    }
     SaveString = SaveString+"game"+D2+"timeelapsed"+D2+"int"+D2+ToString(game.timeelapsed)+D1
     // *** TO DEVELOPER: Recommend putting timer status and other "game" attributes that can change based on user action during the game in this function below:
     // The template to save additional attributes is SaveString=SaveString+{string objectname}+D2+{string attributename}+D2+{datatype string}+D2+ToString({attribute value})+D1
     // For example, to save the "timer.enabled" attribute for a timer named BeeTimer: SaveString=SaveString+"BeeTimer"+D2+"enabled"+D2+"boolean"+D2+ToString(BeeTimer.enabled)+D1
+    SaveString = SaveString+"game"+D2+"Time"+D2+TypeOf(game.Time)+D2+ToString(game.Time)+D1
     // ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-    // DO NOT APPEND THE SAVESTRING WITH ANY ADDITIONAL ATTRIBUTES BELOW THIS POINT. The game.pov.grid_coordinates and delimiters MUST be added on last in order for the LoadGame() Function to load properly.
+    // DO NOT APPEND THE SAVESTRING WITH ANY ADDITIONAL ATTRIBUTES BELOW THIS POINT. The game.pov.grid_coordinates, Created/Destroyed objectlist, and delimiters MUST be added on last in order for the LoadGame() Function to load properly.
     // Save the player.grid_coordinates so the player's map is saved. Because it is a dictionary of dictionaries, it must be saved in a special way...
     // grid_coordinates will be saved in form: "StuffBefore|@ObjectOwner$MapAttributeName&%&Key1$Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;|Key2$Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;Lkey3 = Lvalue3:type|"
     foreach (o, AllObjects()) {
@@ -164,6 +212,14 @@
         }
       }
     }
+    // Add on the list of created/destroyed objects...
+    X = ToString(CreatedObj)
+    // Cut off the "List: " string that preceeds its values when you use the ToString() command
+    CreatedObjStr = Right(X,LengthOf(X)-LengthOf("List: "))
+    X = ToString(DestroyedObj)
+    // Cut off the "List: " string that preceeds its values when you use the ToString() command
+    DestroyedObjStr = Right(X,LengthOf(X)-LengthOf("List: "))
+    SaveString = SaveString+D4+CreatedObjStr+D1+DestroyedObjStr
     // Append the end of the SaveString with the delimiters used, so LoadGame() knows what delimiter maps to what...
     SaveString = SaveString+D1+D2+D3+D4
     // msg for Debugging:
@@ -171,9 +227,9 @@
     // Create save code and present to player in textbox
     JS.CreateSaveCode (SaveString)
     JS.setCss ("#msgbox", "word-wrap:break-word;max-height:250px;")
-]]></function>
-  
-  
+  ]]></function>
+
+
 <function name="LoadGameCode" parameters="SaveGameCodeDecoded"><![CDATA[
     // LoadGameCode(SaveGameCodeDecoded) function to load a SaveGameCode save-state. Takes a decoded (not in base64) SaveGameCode created by SaveGameCode and decoded from base64 by java functions. Requires SaveLoadJavaCode.js in order to function!
     SuppressTurnscripts
@@ -192,6 +248,8 @@
     upgradesave = False
     Proceed = False
     SkippedAttList = ""
+    CreatedObjDebugList = ""
+    DestroyedObjDebugList = ""
     // Check for a "✓" at the end of the SaveGameCodeDecoded string. If it's there, then the function knows this savecode is for an older game version. "But how do we know that ✓ isn't being used as a custom delimiter?" Because ✓ cannot be converted to base64, so the user would get an error trying to make a SaveGameCode with ✓ as a delimiter.
     CheckForCheck = Right(SaveGameCodeDecoded,1)
     if (CheckForCheck="✓") {
@@ -204,8 +262,34 @@
     D2 = Mid (Dls, 2, 1)
     D3 = Mid (Dls, 3, 1)
     D4 = Mid (Dls, 4, 1)
-    // Remove delimiters from end of SaveGameCode also remove the final D1 delimiter from the grid_coordinates string
-    SaveCode = Left(SaveGameCodeDecoded, LengthOf(SaveGameCodeDecoded)-(LengthOf(Dls)+1))
+    // Remove delimiters from end of SaveGameCode
+    SaveCode = Left(SaveGameCodeDecoded, LengthOf(SaveGameCodeDecoded)-(LengthOf(Dls)))
+    // Extract the Created/Destroyed object lists. The START of the created/destroyed section should be after the LAST D4 delimiter...
+    CreatedDestroyedInfo = Right(SaveCode, LengthOf(SaveCode)-InstrRev(SaveCode, D4))
+    if (DebugMode) {
+      msg ("<br>CreatedDestroyedInfo: "+CreatedDestroyedInfo)
+    }
+    CDList = Split(CreatedDestroyedInfo,D1)
+    CSection = ListItem (CDList, 0)
+    DSection = ListItem (CDList, 1)
+    if (CSection="") {
+      CreatedList = NewStringList()
+    }
+    else {
+      CreatedList = Split (CSection, D3)
+      // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
+      list remove (CreatedList, " ")
+    }
+    if (DSection="") {
+      DestroyedList = NewStringList()
+    }
+    else {
+      DestroyedList = Split (DSection, D3)
+      // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
+      list remove (DestroyedList, " ")
+    }
+    // Remove Created/Destroyed list from end of SaveCode, also removing the final D1 and D4 delimiter...
+    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(CreatedDestroyedInfo)+2))
     // Extract the player.grid_coordinates info separately from the rest of the savecode. It has special rules for decoding it since it is a dictionary of dictionaries.
     GridGInfo = Right(SaveCode, LengthOf(SaveCode)-Instr(SaveCode, D4))
     if (DebugMode) {
@@ -214,7 +298,7 @@
     // Remove player.grid_coordinates info from end of SaveCode also remove the final D1 & D4 delimiter separating the grid_coordinates from the rest of the attributes
     SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(GridGInfo)+2))
     if (DebugMode) {
-      msg ("<br>SaveCode w/o player.grid_coordinate info:<br>"+SaveCode)
+      msg ("<br>SaveCode w/o player.grid_coordinate or create/destroy info:<br>"+SaveCode)
     }
     // Note: if the "SaveCode" begins with the word "Error:", then an error was encountered when trying to convert from Base64.
     // Extract SaveCode game info. This includes the gameid, game version, and current player (game.pov)...
@@ -244,12 +328,12 @@
     else {
       // Compare version of game in SaveCode to version of game loading it
       ThisGame_GameVersion = ToDouble(game.version)
-	  if (not TypeOf(OldestAllowedVersion)="double") {
+      if (not TypeOf(OldestAllowedVersion)="double") {
         OldestAllowedVersion_Double = ToDouble(OldestAllowedVersion)
-	  }
-	  else {
-	    OldestAllowedVersion_Double = OldestAllowedVersion
-	  }
+      }
+      else {
+        OldestAllowedVersion_Double = OldestAllowedVersion
+      }
       // If upgrading from an old game version, then arbitrarily set Loaded_GameVersion to ThisGameVersion to proceed.
       if (Loaded_GameVersion<ThisGame_GameVersion) {
         if (upgradesave = False) {
@@ -292,6 +376,18 @@
         Proceed = True
       }
       if (Proceed=True) {
+        // Create any objects noted in the CreatedList, if there are any, so their relevant attributes can be added without error...
+        if (ListCount(CreatedList)>0) {
+          foreach (o, CreatedList) {
+            // Check that objects don't already exist...
+            IsThere = GetObject(o)
+            if (Equal(IsThere,null)) {
+              // If not, create the object
+              create (o)
+              CreatedObjDebugList = CreatedObjDebugList+o+"<br>"
+            }
+          }
+        }
         player.grid_coordinates = null
         // Split the save code up into all objects. Then parse through the value of each object attribute
         SavedObjectList = Split(SaveCode, D1)
@@ -426,15 +522,26 @@
             Skip_Att = True
             GamePOVParent = att_value_obj
           }
-          // Make sure the object you are trying to add/update the attribute to exists, otherwise you'd get an error trying to update/create its attribute. Also, don't update the game.version or game.pov: The game.version should not be updated from the savecode if you're loading from a previous version, and the game.pov is updated last.
-          if (not Equal(object,null) and not Equal(preload_att_value,null) and not Equal(att_value_obj,null) and not fullname="game.gameid" and not fullname="game.version" and not fullname="game.pov" and not Skip_Att=True) {
+          // Make sure the object you are trying to add/update the attribute to exists, otherwise you'd get an error trying to update/create its attribute. If the attribute doesn't exist but the object does, then this function will create it. Also, don't update the game.version or game.pov: The game.version should not be updated from the savecode if you're loading from a previous version, and the game.pov is updated last.
+          if (not Equal(object,null) and not Equal(att_value_obj,null) and not fullname="game.gameid" and not fullname="game.version" and not fullname="game.pov" and not Skip_Att=True) {
+            if (Equal(preload_att_value,null)) {
+              if (DebugMode) {
+                msg ("<br>ATTENTION: Attribute '"+fullname+"' does NOT exist in current game, but its parent object '"+objectname+"' does, so attribute will be created!<br>")
+              }
+              preload_att_value = "null"
+            }
             // Msgs for debugging:
             if (DebugMode) {
               msg ("objectname="+objectname)
               msg ("attributename="+attributename)
               msg ("att_datatype="+att_datatype)
               msg ("preload_att_value="+ToString(preload_att_value))
-              msg ("preload_att_datatype="+TypeOf(preload_att_value))
+              if (Equal(preload_att_value,"null")) {
+                msg ("preload_att_datatype=null")
+              }
+              else {
+                msg ("preload_att_datatype="+TypeOf(preload_att_value))
+              }
               msg ("att_value="+ToString(att_value))
               msg ("att_value_obj="+ToString(att_value_obj))
               msg ("isEqual att_value=preload_att_value?: "+ToString(Equal(att_value,preload_att_value)))
@@ -629,8 +736,22 @@
           }
           set (object, attributename, UDictionary)
         }
+        // Destroy any objects that the player destroyed during their saved game, if any
+        if (ListCount(DestroyedList)>0) {
+          foreach (o, DestroyedList) {
+            // Check that objects still exist...
+            IsThere = GetObject(o)
+            if (not Equal(IsThere,null)) {
+              // If its there, destroy the object
+              destroy (o)
+              DestroyedObjDebugList = DestroyedObjDebugList+o+"<br>"
+            }
+          }
+        }
         msg ("Load complete!")
         if (DebugMode) {
+          msg ("Created objects: "+CreatedObjDebugList)
+          msg ("Destroyed objects: "+DestroyedObjDebugList)
           msg ("Skipped Attributes:<br>"+SkippedAttList)
         }
         // Finally, update game.pov.parent and game.pov
