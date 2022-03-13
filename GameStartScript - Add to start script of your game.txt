@@ -14,4 +14,5 @@ foreach (startobj, AllObjects()) {
 foreach (startobj, AllExits()) {
   list add (game.StartingObjStrList, startobj.name)
 }
+set (game, "checkpoints", NewStringDictionary())
 // End of SaveLoadCode initialization script
