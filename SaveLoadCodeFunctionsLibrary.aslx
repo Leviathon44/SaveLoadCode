@@ -6,7 +6,7 @@
 
   
   <!--
-  SaveLoadCode v3.1
+  SaveLoadCode v3.2
   Quest version: 5.8
   Written by: Leviathon, 2022
   
@@ -239,18 +239,24 @@
       if (SaveAttType="stringlist") {
         if (ListCount(game.SaveTimers)>0) {
           foreach (x, game.SaveTimers) {
-            T = GetObject(x)
+            T = GetTimer(x)
             if (not Equal(T,null)) {
-              TimerName = x.name
-              TimerValue1 = x.trigger
-              TimerValue2 = x.interval
-              TimerValue3 = x.enabled
+              TimerName = GetAttribute(T,"name")
+              TimerValue1 = GetAttribute(T,"trigger")
+              TimerValue2 = GetAttribute(T,"interval")
+              TimerValue3 = GetAttribute(T,"enabled")
               TimerValue1Type = TypeOf(TimerValue1)
               TimerValue2Type = TypeOf(TimerValue2)
               TimerValue3Type = TypeOf(TimerValue3)
-              SaveString = SaveString+TimerName+D2+"trigger"+D2+TimerValue1Type+D2+ToString(TimerValue1)+D1
-              SaveString = SaveString+TimerName+D2+"interval"+D2+TimerValue2Type+D2+ToString(TimerValue2)+D1
-              SaveString = SaveString+TimerName+D2+"enabled"+D2+TimerValue3Type+D2+ToString(TimerValue3)+D1
+              if (not Equal(TimerValue1,null)) {
+                SaveString = SaveString+TimerName+D2+"trigger"+D2+TimerValue1Type+D2+ToString(TimerValue1)+D1
+              }
+              if (not Equal(TimerValue2,null)) {
+                SaveString = SaveString+TimerName+D2+"interval"+D2+TimerValue2Type+D2+ToString(TimerValue2)+D1
+              }
+              if (not Equal(TimerValue3,null)) {
+                SaveString = SaveString+TimerName+D2+"enabled"+D2+TimerValue3Type+D2+ToString(TimerValue3)+D1
+              }
             }
             else {
               error ("ERROR: game.SaveTimers - Timer named '"+x+"' not found!")
@@ -1124,18 +1130,24 @@ else {
       if (SaveAttType="stringlist") {
         if (ListCount(game.SaveTimers)>0) {
           foreach (x, game.SaveTimers) {
-            T = GetObject(x)
+            T = GetTimer(x)
             if (not Equal(T,null)) {
-              TimerName = x.name
-              TimerValue1 = x.trigger
-              TimerValue2 = x.interval
-              TimerValue3 = x.enabled
+              TimerName = GetAttribute(T,"name")
+              TimerValue1 = GetAttribute(T,"trigger")
+              TimerValue2 = GetAttribute(T,"interval")
+              TimerValue3 = GetAttribute(T,"enabled")
               TimerValue1Type = TypeOf(TimerValue1)
               TimerValue2Type = TypeOf(TimerValue2)
               TimerValue3Type = TypeOf(TimerValue3)
-              SaveString = SaveString+TimerName+D2+"trigger"+D2+TimerValue1Type+D2+ToString(TimerValue1)+D1
-              SaveString = SaveString+TimerName+D2+"interval"+D2+TimerValue2Type+D2+ToString(TimerValue2)+D1
-              SaveString = SaveString+TimerName+D2+"enabled"+D2+TimerValue3Type+D2+ToString(TimerValue3)+D1
+              if (not Equal(TimerValue1,null)) {
+                SaveString = SaveString+TimerName+D2+"trigger"+D2+TimerValue1Type+D2+ToString(TimerValue1)+D1
+              }
+              if (not Equal(TimerValue2,null)) {
+                SaveString = SaveString+TimerName+D2+"interval"+D2+TimerValue2Type+D2+ToString(TimerValue2)+D1
+              }
+              if (not Equal(TimerValue3,null)) {
+                SaveString = SaveString+TimerName+D2+"enabled"+D2+TimerValue3Type+D2+ToString(TimerValue3)+D1
+              }
             }
             else {
               error ("ERROR: game.SaveTimers - Timer named '"+x+"' not found!")
