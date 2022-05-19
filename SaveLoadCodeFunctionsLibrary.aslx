@@ -6,7 +6,7 @@
 
   
   <!--
-  SaveLoadCode v3.2
+  SaveLoadCode v3.3
   Quest version: 5.8
   Written by: Leviathon, 2022
   
@@ -538,6 +538,10 @@ else {
       objelements = Split(o, D2)
       objectname = ListItem (objelements, 0)
       object = GetObject (objectname)
+	  if (Equal(object,null)) {
+	    // Then it might be a timer instead
+		object = GetTimer(objectname)
+	  }
       attributename = ListItem (objelements, 1)
       fullname = objectname+"."+attributename
       preload_att_value = GetAttribute (object, attributename)
@@ -1229,10 +1233,6 @@ SuppressTurnscripts
 OldestAllowedVersion = 0.0
 // TO DEVELOPER: Setting DebugMode to 'True' will enable the printing of debug messages to the screen when running. Very useful for testing out the function if you've made any custom edits for compatibility or the like.
 DebugMode = False
-// Msg for Debugging:
-if (DebugMode) {
-  msg ("<br>Full decoded SaveCode:<br>"+SaveGameCodeDecoded)
-}
 // Make sure CheckpointName input is of type 'string'
 if (not TypeOf(CheckpointName)="string") {
   X = TypeOf(CheckpointName)
@@ -1242,6 +1242,10 @@ if (not TypeOf(CheckpointName)="string") {
 if (HasAttribute(game, "checkpoints")) {
   if (DictionaryContains(game.checkpoints, CheckpointName)) {
     SaveGameCodeDecoded = DictionaryItem(game.checkpoints, CheckpointName)
+    // Msg for Debugging:
+    if (DebugMode) {
+      msg ("<br>Full decoded SaveCode:<br>"+SaveGameCodeDecoded)
+    }
   }
   else {
     error ("ERROR: Checkpoint named '"+CheckpointName+"' not found!")
@@ -1373,6 +1377,10 @@ else {
       objelements = Split(o, D2)
       objectname = ListItem (objelements, 0)
       object = GetObject (objectname)
+	  if (Equal(object,null)) {
+	    // Then it might be a timer instead
+		object = GetTimer(objectname)
+	  }
       attributename = ListItem (objelements, 1)
       fullname = objectname+"."+attributename
       preload_att_value = GetAttribute (object, attributename)
