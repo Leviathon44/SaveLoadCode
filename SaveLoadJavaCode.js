@@ -24,11 +24,10 @@ function showPopupSave(text) {
 					try {  
 						// Execute the copy command on selected text
 						var successful = document.execCommand('copy');  
-						//var msg = successful ? 'successful' : 'unsuccessful';  
-						//console.log('Copy email command was ' + msg);  
+						//var msg = successful ? 'successful' : 'unsuccessful'; 
 					} 					
 					catch(err) {  
-					//console.log('Oops, unable to copy');  
+					console.log(err);  
 					}  
 
 					// Remove the selections 
@@ -43,7 +42,7 @@ function showPopupSave(text) {
     $('#msgbox').dialog('open');
 	}
 	catch(err) {
-		ASLEvent("Log", err);
+		console.log(err);
 	}
 };
 
@@ -54,6 +53,7 @@ function ConvertToBase64(string) {
 	  }
 	  catch(err) {
 		conversion = "Error: "+err
+		console.log(conversion)
 	  }
 	  finally {
         return conversion;
@@ -69,6 +69,7 @@ function ConvertFromBase64(string) {
 	  }
 	  catch(err) {
 		conversion = "Error: "+err
+		console.log(conversion)
 	  }
 	  finally {
         return conversion;
@@ -77,12 +78,60 @@ function ConvertFromBase64(string) {
     }
 }
 
+function SaveCheckpoint(string, CheckpointName) {
+	//New with v4.0, copy all text currently on screen to be loaded later
+	//Add @@&%&@@ delimiter
+	var ScreenText = "@@&%&@@"
+	ScreenText += document.querySelector('div#divOutput').innerHTML;
+	//Replace all double-quotes with single quotes so Quest can pass it through JS.eval later
+	ScreenText = ScreenText.replace(/"/g, "'");
+	//There's extra space in the HTML that will cause problems when we try to pass it back into Quest and innerHTML. Let's remove that...
+	ScreenText = ScreenText.replace(/(?:\r\n|\r|\n)/g, '')
+	ScreenText = ScreenText.replace("@@&%&@@            <div", "@@&%&@@<div")
+	ScreenText = ScreenText.replace("</div>                    <div", "</div><div")
+	//Add screen contents to end of savestring
+	string += ScreenText
+	//Also copy the location text at top of screen for later
+	var LocationText = "@@&%&@@"
+	LocationText += document.getElementById('location').textContent
+	string += LocationText
+	//Add CheckpointName to end of string. It has its own delimiter !@@&%&@@!
+	var ChkPtDelim = "!@@&%&@@!"
+	ChkPtDelim += CheckpointName
+	string += ChkPtDelim
+	//Send to Quest function SaveLoadCode_StoreCheckpoint() to store the (un-converted) string to the game.checkpoints dictionary
+	ASLEvent("SaveLoadCode_StoreCheckpoint", string);
+}
+
 function CreateSaveCode(string) {
+	//New with v4.0, copy all text currently on screen to be loaded later
+	//Add @@&%&@@ delimiter
+	var ScreenText = "@@&%&@@"
+	ScreenText += document.querySelector('div#divOutput').innerHTML;
+	//Replace all double-quotes with single quotes so Quest can pass it through JS.eval later
+	ScreenText = ScreenText.replace(/"/g, "'");
+	//There's extra space in the HTML that will cause problems when we try to pass it back into Quest and innerHTML. Let's remove that...
+	ScreenText = ScreenText.replace(/(?:\r\n|\r|\n)/g, '')
+	ScreenText = ScreenText.replace("@@&%&@@            <div", "@@&%&@@<div")
+	ScreenText = ScreenText.replace("</div>                    <div", "</div><div")
+	//Add screen contents to end of savestring
+	string += ScreenText
+	//Also copy the location text at top of screen for later
+	var LocationText = "@@&%&@@"
+	LocationText += document.getElementById('location').textContent
+	string += LocationText
 	//Convert the saved attribute data to Base64 to make it harder for the player to manually alter
 	//converted = ConvertToBase64(string);
 	converted = compressToBase64(string)
 	//Post the created Save Code to the player for them to copy and save
 	showPopupSave(converted);
+}
+
+function ReplaceScreenHTMLContent(StringInput) {
+	//In Quest, the contents of the screen are under the <div> header with id="divOutput".
+	document.querySelector('div#divOutput').innerHTML = StringInput
+	_currentDiv = $("#outputData").attr("data-currentdiv")
+    _divCount = parseInt($("#outputData").attr("data-divcount"))
 }
 
 function LoadSaveCode(LoadCode) {
