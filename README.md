@@ -33,3 +33,30 @@ v3.0:
 
 * New `GetSaveCheckpointDelims()` function. This function returns a stringlist of delimiters used by the `SaveCheckpoint` function. Useful for allowing you to check if user-entered input (i.e. like a "type in your name" input) contains a banned delimiter that would cause issues saving later.
 
+
+v4.0:
+* **BugFixes:**
+    * Fixed a bug where functions were previously not properly checking for the D4 parameter in attributenames and attribute values. Fixed now.
+
+    * Added a check to the `game.SaveAtts` variable to check for banned delimiters in the same way it checks for them with other objects/exits.
+
+* **New Features:**
+    * Support for new game script attribute to allow author to have certain scripts run after every load: `game.AfterLoadCodeScript`
+
+    * Will now save ALL screen contents at time of save, and properly restore them on load!
+
+    * Added support to check for an `ExcludeSaveAtts` string list attribute on ANY object. This string list should contain the string names of any attributes on the object that you explicitly DON'T want saved. 
+        * When saving, it will check the list and see if this attribute exists. If it does, it WON'T save that attribute to the SaveCode
+        * Should work for both objects AND exits. 
+        * *Reminder that this attribute is not necessary for the `game` object (as saving game attributes requires inclusive callouts, rather than exclusive exclusions.)*
+
+    * Added support to check for a `game.LoadGameCode_OldestVersion` attribute that will replace the hard-coded `OldestAllowedVersion` variable in `LoadGameCode` and `LoadCheckpoint`, if found.
+        * This way you can note the oldest allowed version to load within your game rather than having to directly edit your copy of the SaveLoadCodeFunctionsLibrary.
+        * Should be of datatype 'double', or at least a string or int that can be converted to a double (otherwise an error will be thrown).
+        * If `game.LoadGameCode_OldestVersion` not found, then it will default to a hard-coded value (=0.0 in the SaveLoadCode Library by default).
+
+    * The default delimiters have been changed to less-common characters. Specifically: 
+        * D1 has been changed from `|` to `∂`
+        * D2 has been changed from `$` to `∏` 
+        * D4 has been changed from `@` to `∑`
+        * *D3 remains `;` as it is meant to be the delimiter used to separate lists, which is still `;` in Quest, by default*
