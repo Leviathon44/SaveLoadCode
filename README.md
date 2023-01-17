@@ -7,14 +7,14 @@ Check out the wiki page for more information on how to use this library: https:/
 
 **Changelog:**
 
-v1.0: 
+**v1.0:** 
 * Release version
 
-v2.0: 
+**v2.0:**
 * Added save/load support for objects created/destroyed during gameplay.
 
 
-v3.0:
+**v3.0:**
 * Support for new game list attributes to help the author save game attributes and timers (see wiki for more details):
     * `game.SaveAtts`
     * `game.SaveTimers`
@@ -34,7 +34,7 @@ v3.0:
 * New `GetSaveCheckpointDelims()` function. This function returns a stringlist of delimiters used by the `SaveCheckpoint` function. Useful for allowing you to check if user-entered input (i.e. like a "type in your name" input) contains a banned delimiter that would cause issues saving later.
 
 
-v4.0:
+**v4.0:**
 * **BugFixes:**
     * Fixed a bug where functions were previously not properly checking for the D4 parameter in attributenames and attribute values. Fixed now.
 
@@ -60,7 +60,9 @@ v4.0:
         * D2 has been changed from `$` to `∏` 
         * D4 has been changed from `@` to `∑`
         * *D3 remains `;` as it is meant to be the delimiter used to separate lists, which is still `;` in Quest, by default*
-v5.0 ("Final" Version):
+
+
+**v5.0 - ("Final" Version):**
 * **BugFixes:**
     * Fixed a major bug that was preventing checkpoints from persisting properly across SaveCodes. Should be working now.
     
@@ -73,4 +75,4 @@ v5.0 ("Final" Version):
     
     * Added `firsttimeSLC (idString) {script}` and `otherwiseSLC (idString) {script}` to replace the base `firsttime{}` and `otherwise{}`, making firsttime/otherwise capabilities compatible with the SaveLoadCode Library! **See install instructions and wiki for details on how to use!**
         * Simply replace all existing "firsttime {" occurences with "first_timeSLC("") {" and replace all existing "otherwise {" occurences with "other_wiseSLC("") {" and it should work as long as no two firsttime or otherwise instances share the same code. 
-        * If two or more instances DO share the same code (comments do not count), simply add your own custom `idString` as input instead of an empty string. NOTE that first_timeSLC and other_wiseSLC pairs must EACH have their own DIFFERENT uniqueids for them to behave properly. Again, see the install instructions and wiki for further details.
+        * If two or more instances DO share the same code (comments do not count), simply add your own custom `idString` as input instead of an empty string. _**NOTE** that first_timeSLC and other_wiseSLC pairs must EACH have their own DIFFERENT uniqueids for them to behave properly._ Again, see the install instructions and wiki for further details.
