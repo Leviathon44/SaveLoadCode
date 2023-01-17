@@ -32,7 +32,7 @@ function showPopupSave(text) {
 
 					// Remove the selections 
 					window.getSelection().removeAllRanges();  
-}
+                }
 			},
         ],
         closeOnEscape: false,
@@ -60,7 +60,7 @@ function ConvertToBase64(string) {
 		//ASLEvent("Log", conversion);	//For Debugging
 	  }
   }
-}
+};
 
 function ConvertFromBase64(string) {
 	if (string != null && string != "") {
@@ -76,38 +76,39 @@ function ConvertFromBase64(string) {
 		//ASLEvent("Log", conversion);	//For Debugging
 	  }
     }
-}
+};
 
-function SaveCheckpoint(string, CheckpointName) {
+function SaveCheckpoint(stringCheck, CheckpointName) {
 	//New with v4.0, copy all text currently on screen to be loaded later
-	//Add @@&%&@@ delimiter
-	var ScreenText = "@@&%&@@"
-	ScreenText += document.querySelector('div#divOutput').innerHTML;
+	//Add @@$%$@@ checkpoint delimiter
+	var ScreenTextCheck = "@@$%$@@" + document.querySelector('div#divOutput').innerHTML;
+	//ScreenTextCheck += document.querySelector('div#divOutput').innerHTML;
 	//Replace all double-quotes with single quotes so Quest can pass it through JS.eval later
-	ScreenText = ScreenText.replace(/"/g, "'");
+	ScreenTextCheck = ScreenTextCheck.replace(/"/g, "'");
 	//There's extra space in the HTML that will cause problems when we try to pass it back into Quest and innerHTML. Let's remove that...
-	ScreenText = ScreenText.replace(/(?:\r\n|\r|\n)/g, '')
-	ScreenText = ScreenText.replace("@@&%&@@            <div", "@@&%&@@<div")
-	ScreenText = ScreenText.replace("</div>                    <div", "</div><div")
+	ScreenTextCheck = ScreenTextCheck.replace(/(?:\r\n|\r|\n)/g, '')
+	ScreenTextCheck = ScreenTextCheck.replace("@@$%$@@            <div", "@@$%$@@<div")
+	ScreenTextCheck = ScreenTextCheck.replace("</div>                    <div", "</div><div")
 	//Add screen contents to end of savestring
-	string += ScreenText
+	stringCheck += ScreenTextCheck
 	//Also copy the location text at top of screen for later
-	var LocationText = "@@&%&@@"
-	LocationText += document.getElementById('location').textContent
-	string += LocationText
-	//Add CheckpointName to end of string. It has its own delimiter !@@&%&@@!
-	var ChkPtDelim = "!@@&%&@@!"
-	ChkPtDelim += CheckpointName
-	string += ChkPtDelim
+	var LocationTextCheck = "@@$%$@@" + document.getElementById('location').textContent
+	//LocationTextCheck += document.getElementById('location').textContent
+	stringCheck += LocationTextCheck
+	//Add CheckpointName to end of string. It has its own delimiter !@@$%$@@!
+	var ChkPtDelim = "!@@$%$@@!" + CheckpointName
+	//ChkPtDelim += CheckpointName
+	stringCheck += ChkPtDelim
 	//Send to Quest function SaveLoadCode_StoreCheckpoint() to store the (un-converted) string to the game.checkpoints dictionary
-	ASLEvent("SaveLoadCode_StoreCheckpoint", string);
-}
+	ASLEvent("SaveLoadCode_StoreCheckpoint", stringCheck);
+};
 
-function CreateSaveCode(string) {
+function CreateSaveCode(stringSC) {
 	//New with v4.0, copy all text currently on screen to be loaded later
+	console.log("FLAG1: "+stringSC)
 	//Add @@&%&@@ delimiter
-	var ScreenText = "@@&%&@@"
-	ScreenText += document.querySelector('div#divOutput').innerHTML;
+	var ScreenText = "@@&%&@@" + document.querySelector('div#divOutput').innerHTML;
+	//ScreenText += document.querySelector('div#divOutput').innerHTML;
 	//Replace all double-quotes with single quotes so Quest can pass it through JS.eval later
 	ScreenText = ScreenText.replace(/"/g, "'");
 	//There's extra space in the HTML that will cause problems when we try to pass it back into Quest and innerHTML. Let's remove that...
@@ -115,24 +116,25 @@ function CreateSaveCode(string) {
 	ScreenText = ScreenText.replace("@@&%&@@            <div", "@@&%&@@<div")
 	ScreenText = ScreenText.replace("</div>                    <div", "</div><div")
 	//Add screen contents to end of savestring
-	string += ScreenText
+	stringSC += ScreenText
 	//Also copy the location text at top of screen for later
-	var LocationText = "@@&%&@@"
-	LocationText += document.getElementById('location').textContent
-	string += LocationText
+	var LocationText = "@@&%&@@" + document.getElementById('location').textContent
+	//LocationText += document.getElementById('location').textContent
+	stringSC += LocationText
 	//Convert the saved attribute data to Base64 to make it harder for the player to manually alter
 	//converted = ConvertToBase64(string);
-	converted = compressToBase64(string)
+	console.log("FLAG2: "+stringSC)
+	var converted = compressToBase64(stringSC)
 	//Post the created Save Code to the player for them to copy and save
 	showPopupSave(converted);
-}
+};
 
 function ReplaceScreenHTMLContent(StringInput) {
 	//In Quest, the contents of the screen are under the <div> header with id="divOutput".
 	document.querySelector('div#divOutput').innerHTML = StringInput
 	_currentDiv = $("#outputData").attr("data-currentdiv")
     _divCount = parseInt($("#outputData").attr("data-divcount"))
-}
+};
 
 function LoadSaveCode(LoadCode) {
 	//Check if loaded code is encoded in Base64. The SaveGame() code has game.gameid as it's first parameter, so if first 4 characters are "game", assume it hasn't been encoded.
@@ -146,7 +148,7 @@ function LoadSaveCode(LoadCode) {
 	}
 	//Send the loadcode back to the LoadGame() function in Quest
 	ASLEvent("LoadGameCode", P);
-}
+};
 
 function LoadGamePrompt() {
 	$('#msgboxCaption').html("<form id='LoadCodeForm'><textarea id='LoadCodeBox' cols='55' rows='11' style='overflow:auto;max-width:100%'></textarea></form>");
@@ -166,6 +168,7 @@ function LoadGamePrompt() {
 					  $(this).dialog('close');
 					  //document.getElementById("#LoadCodeForm").submit();
 					  //var LoadCode = document.getElementById('#LoadCodeBox').value;
+					  $('div.ui-widget-overlay.ui-front').css('cursor', 'wait');
 					  LoadSaveCode(LoadCode);
 					}
 }
@@ -177,6 +180,7 @@ function LoadGamePrompt() {
     $('#msgbox').dialog(msgboxOptions);
     $('#msgbox').dialog('open');
 };
+
 
 
 // The below is adapted from Pieroxy's LZ-string javascript library. An excerpt from LZ-string was pulled in and adapted to allow for string compression to cut down on the length of the savecode (especially when the savecode contains multiple checkpoints)...

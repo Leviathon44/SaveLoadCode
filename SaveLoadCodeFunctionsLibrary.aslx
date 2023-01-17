@@ -6,9 +6,9 @@
 
   
   <!--
-  SaveLoadCode v4.0
+  SaveLoadCode v5.0
   Quest version: 5.8
-  Written by: Leviathon, 2022
+  Written by: Leviathon, 2023
   
   Tutorial and notes here:
   https://github.com/Leviathon44/SaveLoadCode/wiki
@@ -37,9 +37,12 @@
     // Will not grab any other attributes attached to the "game" object except for game.gameid, game.version, game.pov, and game.timeelapsed. IF YOU WOULD LIKE TO SAVE ANY ADDITIONAL ATTRIBUTES ATTACHED TO "game", you will need to add the attribute names to a game.SaveAtts STRINGLIST attribute OR EDIT THIS FUNCTION TO CALL THEM OUT SPECIFICALLY. If you'd like to go the latter route I've noted the section below where I would recommend adding custom "game" attributes with a ***
     // Will not save timer status UNLESS the names of the timers are added to a game.SaveTimers STRINGLIST attribute OR YOU EDIT THIS FUNCTION DIRECTLY! If you want to go the latter route, I would recommend adding these to the section below marked with ***
     SuppressTurnscripts
+    // Change cursor to spinner while saving. Commented out for now as it seems to set the cursor to wait on game start-up for some reason? Saving doesn't take as long as loading, so it's less necessary to have the wait cursor on save...
+	// JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', 'wait');")
     // Make sure ShowCodePopupFlag is of type 'boolean'
     if (not TypeOf(ShowCodePopupFlag)="boolean") {
-      X = TypeOf(ShowCodePopupFlag)
+	  X = TypeOf(ShowCodePopupFlag)
+	  JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
       error ("ERROR: SaveGameCode function expected input 'ShowCodePopupFlag' to be of type 'boolean', but instead recieved an input of type '"+X+"'!")
     }
     SaveString = ""
@@ -110,7 +113,9 @@
                 foreach (listcheck, v) {
                   // Check if there are delimiters in the names of the list entries. If so, warn the player that their save won't work.
                   if (Instr(listcheck,D1)>0 or Instr(listcheck,D2)>0 or Instr(listcheck,D3)>0 or Instr(listcheck,D4)>0) {
-                    error ("ERROR: Banned delimiter detected in \""+fullname+"\" list entry '"+listcheck+"'! Consider editting SaveGameCode function to change delimiters, or renaming list entry. Current banned list entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+                    // Change cursor back to normal when done
+	                JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+					error ("ERROR: Banned delimiter detected in \""+fullname+"\" list entry '"+listcheck+"'! Consider editting SaveGameCode function to change delimiters, or renaming list entry. Current banned list entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
                   }
                 }
               }
@@ -125,13 +130,17 @@
             if (DictionaryCount(v)>0) {
               foreach (dictkey, v) {
                 if (Instr(dictkey,D1)>0 or Instr(dictkey,D2)>0 or Instr(dictkey,D3)>0 or Instr(dictkey,D4)>0) {
-                  error ("ERROR: Banned delimiter detected in \""+fullname+"\" dictionary key '"+dictkey+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary key. Current banned dictionary key delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+                  // Change cursor back to normal when done
+	              JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+				  error ("ERROR: Banned delimiter detected in \""+fullname+"\" dictionary key '"+dictkey+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary key. Current banned dictionary key delimiters: "+D1+" "+D2+" "+D3+" "+D4)
                 }
                 if (att_datatype="stringdictionary") {
                   dictitm = DictionaryItem (v, dictkey)
                   // Check if there are delimiters in the names of the list entries. If so, warn the player that their save won't work.
                   if (Instr(dictitm,D1)>0 or Instr(dictitm,D2)>0 or Instr(dictitm,D3)>0 or Instr(dictitm,D4)>0) {
-                    error ("ERROR: Banned delimiter detected in \""+fullname+"\" dictionary key.value '"+dictkey+"."+dictitm+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary value. Current banned dictionary entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+                    // Change cursor back to normal when done
+	                JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+					error ("ERROR: Banned delimiter detected in \""+fullname+"\" dictionary key.value '"+dictkey+"."+dictitm+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary value. Current banned dictionary entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
                   }
                 }
               }
@@ -142,13 +151,19 @@
           }
           // Check if there are delimiters in any of the names/values. If so, warn the player that their save won't work.
           if (Instr(objectname,D1)>0 or Instr(objectname,D2)>0 or Instr(objectname,D3)>0 or Instr(objectname,D4)>0) {
-            error ("ERROR: Banned delimiter detected in \""+fullname+"\" object name! Consider editting SaveGameCode function to change delimiters, or renaming object.Current banned objectname delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+            // Change cursor back to normal when done
+	        JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			error ("ERROR: Banned delimiter detected in \""+fullname+"\" object name! Consider editting SaveGameCode function to change delimiters, or renaming object.Current banned objectname delimiters: "+D1+" "+D2+" "+D3+" "+D4)
           }
           else if (Instr(attributename,D1)>0 or Instr(attributename,D2)>0 or Instr(attributename,D3)>0 or Instr(attributename,D4)>0) {
-            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute. Current banned attributename delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+            // Change cursor back to normal when done
+	        JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute. Current banned attributename delimiters: "+D1+" "+D2+" "+D3+" "+D4)
           }
           else if (Instr(att_value,D1)>0 or Instr(att_value,D2)>0 or Instr(att_value,D4)>0) {
-            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value. Current banned attribute value delimiters: "+D1+" "+D2+" "+D4)
+            // Change cursor back to normal when done
+	        JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value. Current banned attribute value delimiters: "+D1+" "+D2+" "+D4)
           }
           SaveString = SaveString+objectname+D2+attributename+D2+att_datatype+D2+att_value+D1
         }
@@ -207,13 +222,19 @@
           }
           // Check if there are delimiters in any of the names/values. If so, warn the player that their save won't work.
           if (Instr(objectname,D1)>0 or Instr(objectname,D2)>0 or Instr(objectname,D3)>0 or Instr(objectname,D4)>0) {
-            error ("ERROR: Banned delimiter detected in \""+fullname+"\" object name! Consider editting SaveGameCode function to change delimiters, or renaming object. Current banned objectname delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+            // Change cursor back to normal when done
+	        JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			error ("ERROR: Banned delimiter detected in \""+fullname+"\" object name! Consider editting SaveGameCode function to change delimiters, or renaming object. Current banned objectname delimiters: "+D1+" "+D2+" "+D3+" "+D4)
           }
           else if (Instr(attributename,D1)>0 or Instr(attributename,D2)>0 or Instr(attributename,D3)>0 or Instr(attributename,D4)>0) {
-            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute. Current banned attributename delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+            // Change cursor back to normal when done
+	        JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute. Current banned attributename delimiters: "+D1+" "+D2+" "+D3+" "+D4)
           }
           else if (Instr(att_value,D1)>0 or Instr(att_value,D2)>0 or Instr(att_value,D4)>0) {
-            error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value. Current banned attribute value delimiters: "+D1+" "+D2+" "+D4)
+            // Change cursor back to normal when done
+	        JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			error ("ERROR: Banned delimiter detected in \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value. Current banned attribute value delimiters: "+D1+" "+D2+" "+D4)
           }
           SaveString = SaveString+objectname+D2+attributename+D2+att_datatype+D2+att_value+D1
         }
@@ -239,17 +260,64 @@
     SaveString = SaveString+"game"+D2+"timeelapsed"+D2+"int"+D2+ToString(game.timeelapsed)+D1
     // Check if game.SaveAtts and/or game.SaveTimers exists.
     // game.SaveAtts is expected to be a stringlist containing a list of game attributes to save.
-    if (HasAttribute (game, "SaveAtts")) {
-      SaveAttType = TypeOf(game.SaveAtts)
-      if (SaveAttType="stringlist") {
-        if (ListCount(game.SaveAtts)>0) {
-          foreach (x, game.SaveAtts) {
-            AttValue = GetAttribute (game, x)
+    if (not HasAttribute (game, "SaveAtts")) {
+	  // If SaveAtts does not already exist, we are going to create it so we can add several game attributes we want to save by-default
+	  game.SaveAtts = NewStringList()
+	}
+    SaveAttType = TypeOf(game.SaveAtts)
+    if (SaveAttType="stringlist") {
+	  // Add some game attributes that we want by-default
+      if (not ListContains(game.SaveAtts, "lastlinkid")) {
+	    list add (game.SaveAtts, "lastlinkid")
+	  }
+	  if (not ListContains(game.SaveAtts, "lastoutputsection")) {
+	    list add (game.SaveAtts, "lastoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "currentturnoutputsection")) {
+        list add (game.SaveAtts, "currentturnoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "lastturnoutputsection")) {
+	    list add (game.SaveAtts, "lastturnoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "lastobjects")) {
+	    list add (game.SaveAtts, "lastobjects")
+	  }
+	  if (not ListContains(game.SaveAtts, "menuoptionskeys")) {
+        list add (game.SaveAtts, "menuoptionskeys")
+	  }
+	  if (not ListContains(game.SaveAtts, "menuoutputsection")) {
+	    list add (game.SaveAtts, "menuoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "SaveLoadCode_firsttimetrigger")) {
+	    list add (game.SaveAtts, "SaveLoadCode_firsttimetrigger")
+	  }
+	  // list add (game.SaveAtts, "menucallback") // To Do -  This is the key to having a menu work when loading onto an active menu. It's a script attribute (set by the ShowMenu function, actually). So if I can figure out how to update a script attribute in-game, I can update this...
+	  if (not ListContains(game.SaveAtts, "menuallowcancel")) {
+	    list add (game.SaveAtts, "menuallowcancel")
+	  }
+	  if (not ListContains(game.SaveAtts, "disambiguating")) {
+        list add (game.SaveAtts, "disambiguating")
+	  }
+	  if (ListCount(game.SaveAtts)>0) {
+        foreach (x, game.SaveAtts) {
+          AttValue = GetAttribute (game, x)
+		  if (not Equal(AttValue,null)) {
             att_datatype = TypeOf(AttValue)
-			fullname = "game."+x
+	  	    fullname = "game."+x
 	        if (att_datatype="object") {
               att_value = AttValue.name
             }
+			else if (x="SaveLoadCode_firsttimetrigger") {
+			  // Save game.SaveLoadCode_firsttimetrigger differently than other stringlists since it's too easy for ";" to accidentally appear in it
+			  // Use different delimiter
+			  D3ex=D3+"$$&$$&$$"+D3
+			  firsttimeString = ""
+			  foreach (d, AttValue) {
+			    firsttimeString = firsttimeString + d + D3ex
+			  }
+			  // Remove final D3ex from end and save
+		      att_value = Left(firsttimeString, LengthOf(firsttimeString)-LengthOf(D3ex))
+			}
             else if (att_datatype="stringlist" or att_datatype="objectlist") {
               X = ToString(AttValue)
               // Cut off the "List: " string that preceeds its values when you use the ToString() command
@@ -260,7 +328,9 @@
                   foreach (listcheck, AttValue) {
                     // Check if there are delimiters in the names of the list entries. If so, warn the player that their save won't work.
                     if (Instr(listcheck,D1)>0 or Instr(listcheck,D2)>0 or Instr(listcheck,D3)>0 or Instr(listcheck,D4)>0) {
-                      error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" list entry '"+listcheck+"'! Consider editting SaveGameCode function to change delimiters, or renaming list entry. Current banned list entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+                      // Change cursor back to normal when done
+	                  JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+					  error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" list entry '"+listcheck+"'! Consider editting SaveGameCode function to change delimiters, or renaming list entry. Current banned list entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
                     }
                   }
                 }
@@ -274,13 +344,17 @@
               if (DictionaryCount(AttValue)>0) {
                 foreach (dictkey, AttValue) {
                   if (Instr(dictkey,D1)>0 or Instr(dictkey,D2)>0 or Instr(dictkey,D3)>0 or Instr(dictkey,D4)>0) {
-                    error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" dictionary key '"+dictkey+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary key. Current banned dictionary key delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+                    // Change cursor back to normal when done
+	                JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+					error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" dictionary key '"+dictkey+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary key. Current banned dictionary key delimiters: "+D1+" "+D2+" "+D3+" "+D4)
                   }
                   if (att_datatype="stringdictionary") {
                     dictitm = DictionaryItem (AttValue, dictkey)
                     // Check if there are delimiters in the names of the list entries. If so, warn the player that their save won't work.
                     if (Instr(dictitm,D1)>0 or Instr(dictitm,D2)>0 or Instr(dictitm,D3)>0 or Instr(dictitm,D4)>0) {
-                      error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" dictionary key.value '"+dictkey+"."+dictitm+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary value. Current banned dictionary entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+                      // Change cursor back to normal when done
+	                  JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+					  error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" dictionary key.value '"+dictkey+"."+dictitm+"'! Consider editting SaveGameCode function to change delimiters, or renaming dictionary value. Current banned dictionary entry delimiters: "+D1+" "+D2+" "+D3+" "+D4)
                     }
                   }
                 }
@@ -289,32 +363,44 @@
             else {
               att_value = ToString(AttValue)
             }
-			// Check if there are delimiters in any of the names/values. If so, warn the player that their save won't work.
+		    // Check if there are delimiters in any of the names/values. If so, warn the player that their save won't work.
             if (Instr(x,D1)>0 or Instr(x,D2)>0 or Instr(x,D3)>0 or Instr(x,D4)>0) {
-              error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute. Current banned attributename delimiters: "+D1+" "+D2+" "+D3+" "+D4)
+              // Change cursor back to normal when done
+	          JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			  error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" attribute name! Consider editting SaveGameCode function to change delimiters, or renaming attribute. Current banned attributename delimiters: "+D1+" "+D2+" "+D3+" "+D4)
             }
             else if (Instr(att_value,D1)>0 or Instr(att_value,D2)>0 or Instr(att_value,D4)>0) {
-              error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value. Current banned attribute value delimiters: "+D1+" "+D2+" "+D4)
+              // Change cursor back to normal when done
+	          JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			  error ("ERROR: Banned delimiter detected in 'game.SaveAtts' entry \""+fullname+"\" attribute value! Consider editting SaveGameCode function to change delimiters, or changing attribute value. Current banned attribute value delimiters: "+D1+" "+D2+" "+D4)
             }
-			// Save to SaveString:
+	        // Save to SaveString:
             if (not Equal(AttValue,null) and not Equal(x,"checkpoints") and not att_datatype="script" and not att_datatype="scriptdictionary" and not att_datatype="dictionary" and not att_datatype="list" and not att_datatype="delegate"and not att_datatype="command pattern") {
               SaveString = SaveString+"game"+D2+x+D2+att_datatype+D2+att_value+D1
             }
             else if (Equal(x,"checkpoints")) {
-              error ("ERROR: game.SaveAtts - Banned attribute 'checkpoints' found in game.SaveAtts. game.checkpoints cannot be saved using game.SaveAtts!")
+              // Change cursor back to normal when done
+	          JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			  error ("ERROR: game.SaveAtts - Banned attribute 'checkpoints' found in game.SaveAtts. game.checkpoints cannot be saved using game.SaveAtts!")
             }
             else if (Equal(AttValue,null)) {
-              error ("ERROR: game.SaveAtts - Attribute entry '"+x+"' not found attached to game object!")
+              // Change cursor back to normal when done
+	          JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			  error ("ERROR: game.SaveAtts - Attribute entry '"+x+"' not found attached to game object!")
             }
             else {
-              error ("ERROR: game.SaveAtts - Attribute entry '"+x+"' not allowed. SaveGameCode cannot save attributes of type: "+att_datatype)
+              // Change cursor back to normal when done
+	          JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			  error ("ERROR: game.SaveAtts - Attribute entry '"+x+"' not allowed. SaveGameCode cannot save attributes of type: "+att_datatype)
             }
-          }
+		  }
         }
       }
-      else {
-        error ("ERROR: game.SaveAtts expected to be a stringlist containing a list of game attributes to save. Instead, game.SaveAtts found is of datatype: "+SaveAttType)
-      }
+    }
+    else {
+      // Change cursor back to normal when done
+	  JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+	  error ("ERROR: game.SaveAtts expected to be a stringlist containing a list of game attributes to save. Instead, game.SaveAtts found is of datatype: "+SaveAttType)
     }
     // game.SaveTimers is expected to be an stringlist containing a list of the names of all timers in the game that the author wants to save (ideally, all timers in the game).
     if (HasAttribute (game, "SaveTimers")) {
@@ -342,13 +428,17 @@
               }
             }
             else {
-              error ("ERROR: game.SaveTimers - Timer named '"+x+"' not found!")
+              // Change cursor back to normal when done
+	          JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			  error ("ERROR: game.SaveTimers - Timer named '"+x+"' not found!")
             }
           }
         }
       }
       else {
-        error ("ERROR: game.SaveTimers expected to be a stringlist containing a list of the names of timers. Instead, game.SaveTimers found is of datatype: "+SaveAttType)
+        // Change cursor back to normal when done
+	    JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+		error ("ERROR: game.SaveTimers expected to be a stringlist containing a list of the names of timers. Instead, game.SaveTimers found is of datatype: "+SaveAttType)
       }
     }
     // If neither of those attributes exist, then the developer can also add their own custom attributes to save using the template below...
@@ -402,8 +492,35 @@
     // Cut off the "List: " string that preceeds its values when you use the ToString() command
     DestroyedObjStr = Right(X,LengthOf(X)-LengthOf("List: "))
     SaveString = SaveString+D4+CreatedObjStr+D1+DestroyedObjStr
-    // Special logic needed in order to save the game.checkpoints attribute
+    // Special logic to save game.textprocessor_seen. Needed to properly capture {once:} and {notfirst:} triggers
+	// Populate TextProcSaveString empty string in case no game.textprocessor_seen found, or it is empty
+	TextProcSaveString = ""
+	if (HasAttribute(game,"textprocessor_seen")) {
+	  if (DictionaryCount(game.textprocessor_seen)>0) {
+	    // game.textprocessor_seen should be a dictionary of lists
+	    // Pattern: Key1|D1|List1Val1|D2|List1Val2|D2|List1Val3|D2exD1|Key2|D1|List2Val1...
+	    D2exD1 = D2+"$&&$"+D1
+	    TextProcessorSeen = game.textprocessor_seen
+	    TextProcSaveString = ""
+	    foreach (Textkey, TextProcessorSeen) {
+	      TextProcSaveString = TextProcSaveString+Textkey+D1
+		  TextProcList = DictionaryItem(TextProcessorSeen, Textkey)
+		  foreach (Textval, TextProcList) {
+            TextProcSaveString = TextProcSaveString+Textval+D2
+		  }
+		  // Remove final D2 from end
+		  TextProcSaveString = Left(TextProcSaveString, LengthOf(TextProcSaveString)-LengthOf(D2))
+		  // Add D2exD1 delimiter to end to separate from next key
+		  TextProcSaveString = TextProcSaveString+D2exD1
+	    }
+	    // Remove final D2exD1 from end
+	    TextProcSaveString = Left(TextProcSaveString, LengthOf(TextProcSaveString)-LengthOf(D2exD1))
+	  }
+	}
+	SaveString = SaveString+D4+TextProcSaveString
+	// Special logic needed in order to save the game.checkpoints attribute
     D4toD1 = D4+D3+D2+D1
+	D4exD1 = D4+D3+"!&$"+D2+D1
     if (HasAttribute(game,"checkpoints")) {
       if (DictionaryCount(game.checkpoints)>0) {
         KeyList = ""
@@ -411,11 +528,11 @@
         foreach (k, game.checkpoints) {
           KeyList = KeyList+k+D3
           val = DictionaryItem(game.checkpoints, k)
-          CheckValList = CheckValList+val+D4toD1
+          CheckValList = CheckValList+val+D4exD1
         }
         // Remove final D3 from KeyList string and final D4toD1 from CheckValList
         KeyList = Left(KeyList, LengthOf(KeyList)-LengthOf(D3))
-        CheckValList = Left(CheckValList, LengthOf(CheckValList)-LengthOf(D4toD1))
+        CheckValList = Left(CheckValList, LengthOf(CheckValList)-LengthOf(D4exD1))
         // Add game.checkpoints data to SaveString
         SaveString = SaveString+D4toD1+KeyList+D4toD1+CheckValList
       }
@@ -438,12 +555,14 @@
       JS.setCss ("#msgbox", "word-wrap:break-word;max-height:250px;")
     }
     return (SaveString)
+	// Change cursor back to normal when done
+	JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
 ]]></function>
 
 <function name="LoadGameCode" parameters="SaveGameCodeDecoded"><![CDATA[
     // LoadGameCode(SaveGameCodeDecoded) function to load a SaveGameCode save-state. Takes a decoded (not in base64) SaveGameCode created by SaveGameCode and decoded from base64 by java functions. Requires SaveLoadJavaCode.js in order to function!
     SuppressTurnscripts
-    // NOTE: Requires either JS.LoadSaveCode to be called with a SaveGameCode as an input parameter, or JS.LoadGamePrompt to be called elsewhere (i.e. by a custom "LoadGame" command), which will make a popup appear for the player to enter their SaveCode, eventually piping it to this function.
+	// NOTE: Requires either JS.LoadSaveCode to be called with a SaveGameCode as an input parameter, or JS.LoadGamePrompt to be called elsewhere (i.e. by a custom "LoadGame" command), which will make a popup appear for the player to enter their SaveCode, eventually piping it to this function.
     // TO DEVELOPER: Set the OldestAllowedVersion to the oldest compatible game version that a player can load saved game data from. Setting OldestAllowedVersion=0 will essentially allow the player to load saves from any old version. Setting OldestAllowedVersion=game.version will make it so the player can ONLY load saves from the current game version.
     // As of SaveLoadCode v4.0, this OldestAllowedVersion variable will now key off of the 'game.LoadGameCode_OldestVersion' 'double' attribute. For compatibility reasons, if that attribute does not exist, then it will default to a hard-coded value here
 	if (HasAttribute(game,"LoadGameCode_OldestVersion")) {
@@ -473,15 +592,17 @@
       SaveGameCodeDecoded = Left(SaveGameCodeDecoded, LengthOf(SaveGameCodeDecoded)-2)
     }
     // Separate HTML screen contents from end of SaveGameCodeDecoded
-    SaveCodeAndScreenList = Split(SaveGameCodeDecoded, "@@&%&@@")
+	SaveCodeAndScreenList = Split(SaveGameCodeDecoded, "@@&%&@@")
     // There should only be two instances where "@@&%&@@" shows up in the savestring: first is to delimit the HTML screen contents, second to delimit the Location text. If it shows up more than twice, then there will be issues...
-    if (ListCount(SaveCodeAndScreenList)=3) {
+	if (ListCount(SaveCodeAndScreenList)=3) {
       SaveGameCodeDecodedA = ListItem(SaveCodeAndScreenList,0)
       ScreenContents = ListItem(SaveCodeAndScreenList,1)
       LocationText = ListItem(SaveCodeAndScreenList,2)
     }
     else {
-      error ("ERROR: Banned delimiter '@@&%&@@' detected in savestring! Aborting load...")
+      // Change cursor back to normal when done
+	  JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+	  error ("ERROR: Banned delimiter '@@&%&@@' detected in savestring! Aborting load...")
     }
     // Retrieve delimiters from end of SaveGameCodeDecodedA
     Dls = Right(SaveGameCodeDecodedA,4)
@@ -493,20 +614,18 @@
     SaveCode = Left(SaveGameCodeDecodedA, LengthOf(SaveGameCodeDecodedA)-(LengthOf(Dls)))
     // Special logic to extract saved game.checkpoints attribute
     D4toD1 = D4+D3+D2+D1
+	D4exD1 = D4+D3+"!&$"+D2+D1
     CheckpointSplit = Split(SaveCode, D4toD1)
     SaveCode = ListItem(CheckpointSplit,0)
     CheckpointKeys = ListItem(CheckpointSplit,1)
-    // If CheckpointKeys not an empty string, then that means there was game.checkpoints data saved. Extract it.
-    if (not CheckpointKeys="") {
-      CheckpointKeyList = Split(CheckpointKeys, D3)
-      game.checkpoints = NewStringDictionary()
-      for (xx, 0, ListCount(CheckpointKeyList)-1) {
-        key = ListItem(CheckpointKeyList,xx)
-        val = ListItem(CheckpointSplit,xx+1)
-        DictionaryAdd (game.checkpoints, key, val)
-      }
-    }
-    // Extract the Created/Destroyed object lists. The START of the created/destroyed section should be after the LAST D4 delimiter...
+	CheckpointVals = ListItem(CheckpointSplit,2)
+	// Extract the game.textprocessor_seen parameter. The START of game.textprocessor_seen should be after the LAST D4 delimiter...
+    D2exD1 = D2+"$&&$"+D1
+	TextProcSeenInfo = Right(SaveCode, LengthOf(SaveCode)-InstrRev(SaveCode, D4))
+	TextProcKeyValPairs = Split(TextProcSeenInfo, D2exD1)
+	// Remove game.textprocessor_seen info list from end of SaveCode, also removing the final D4 delimiter...
+    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(TextProcSeenInfo)+1))
+	// Extract the Created/Destroyed object lists. The START of the created/destroyed section should be after the SECOND-TO-LAST D4 delimiter...
     CreatedDestroyedInfo = Right(SaveCode, LengthOf(SaveCode)-InstrRev(SaveCode, D4))
     if (DebugMode) {
       msg ("<br>CreatedDestroyedInfo: "+CreatedDestroyedInfo)
@@ -518,20 +637,22 @@
       CreatedList = NewStringList()
     }
     else {
-      CreatedList = Split (CSection, D3)
+      // The way stringlists get saved when they're converted with ToString, they'll actually be delimited with "; " by default, not just ";"
+	  CreatedList = Split (CSection, D3+" ")
       // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
-      list remove (CreatedList, " ")
+      list remove (CreatedList, "")
     }
     if (DSection="") {
       DestroyedList = NewStringList()
     }
     else {
-      DestroyedList = Split (DSection, D3)
+	  // The way stringlists get saved when they're converted with ToString, they'll actually be delimited with "; " by default, not just ";"
+      DestroyedList = Split (DSection, D3+" ")
       // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
-      list remove (DestroyedList, " ")
+      list remove (DestroyedList, "")
     }
-    // Remove Created/Destroyed list from end of SaveCode, also removing the final D1 and D4 delimiter...
-    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(CreatedDestroyedInfo)+2))
+    // Remove Created/Destroyed list from end of SaveCode, also removing the final D4 delimiter...
+    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(CreatedDestroyedInfo)+1))
     // Extract the player.grid_coordinates info separately from the rest of the savecode. It has special rules for decoding it since it is a dictionary of dictionaries.
     GridGInfo = Right(SaveCode, LengthOf(SaveCode)-Instr(SaveCode, D4))
     if (DebugMode) {
@@ -554,7 +675,7 @@
     GameVerObjectEl = ListItem (GameInfo,1)
     GameVerElements = Split(GameVerObjectEl,D2)
     VersionString = ListItem (GameVerElements, 3)
-    Loaded_GameVersion = ToDouble(VersionString)
+    //Loaded_GameVersion = ToDouble(VersionString)
     GamePOVObjectEl = ListItem (GameInfo,2)
     GamePOVElements = Split(GamePOVObjectEl,D2)
     GamePOVName = ListItem (GamePOVElements, 3)
@@ -565,12 +686,30 @@
     GamePOVParent = GetAttribute (GamePOVObject, "parent")
     // Check that the save belongs to this game by comparing gameIds
     if (not Loaded_GameId=game.gameid) {
-      error ("Load Aborted: SaveCode not identified by this game. GameID mismatch.")
+      // Change cursor back to normal when done
+	  JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+	  error ("Load Aborted: SaveCode not identified by this game. GameID mismatch.")
     }
     else {
       // Compare version of game in SaveCode to version of game loading it
-      ThisGame_GameVersion = ToDouble(game.version)
-      if (not TypeOf(OldestAllowedVersion)="double") {
+	  // First convert the game.version to a double
+	  if (ListCount(Split(ToString(game.version),"."))>2) {
+	    // If there is a second decimal with additional numbering/characters, ignore everything after that second decimal 
+        ThisGame_GameVersion = ToDouble(Left(ToString(game.version),Instr(Instr(ToString(game.version),".")+1, ToString(game.version),".")-1))
+      }
+	  else {
+        ThisGame_GameVersion = ToDouble(game.version)
+      }
+	  // Do the same for the loaded game version...
+	  if (ListCount(Split(VersionString,"."))>2) {
+	    // If there is a second decimal with additional numbering/characters, ignore everything after that second decimal 
+        Loaded_GameVersion = ToDouble(Left(VersionString,Instr(Instr(VersionString,".")+1,VersionString,".")-1))
+      }
+	  else {
+        Loaded_GameVersion = ToDouble(VersionString)
+      }
+	  // Make sure the oldest allowed version is of type "double" as well
+	  if (not TypeOf(OldestAllowedVersion)="double") {
         OldestAllowedVersion_Double = ToDouble(OldestAllowedVersion)
       }
       else {
@@ -602,7 +741,9 @@
             }
           }
           else {
-            error ("ERROR: The SaveCode you are attempting to load is from an INCOMPATIBLE older game version, and thus cannot be loaded by this version of the game.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Oldest Compatible Version: v"+ToString(OldestAllowedVersion)+"<br><br>Loading aborted...")
+            // Change cursor back to normal when done
+	        JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+			error ("ERROR: The SaveCode you are attempting to load is from an INCOMPATIBLE older game version, and thus cannot be loaded by this version of the game.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Oldest Compatible Version: v"+ToString(OldestAllowedVersion)+"<br><br>Loading aborted...")
           }
         }
         else {
@@ -611,13 +752,45 @@
         }
       }
       else if (Loaded_GameVersion>ThisGame_GameVersion) {
-        error ("ERROR: The SaveCode you are attempting to load is from a newer version of this game and is not compatible.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Please try a different SaveCode or use an updated game file.<br><br>Load aborted.")
+        // Change cursor back to normal when done
+	    JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+		error ("ERROR: The SaveCode you are attempting to load is from a newer version of this game and is not compatible.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Please try a different SaveCode or use an updated game file.<br><br>Load aborted.")
       }
       else {
         msg ("Proceeding with load...")
+		// Change cursor to spinner while loading
+	    JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', 'wait');")
         Proceed = True
       }
       if (Proceed=True) {
+	    // If CheckpointKeys not an empty string, then that means there was game.checkpoints data saved. Extract it.
+        if (not CheckpointKeys="") {
+          CheckpointKeyList = Split(CheckpointKeys, D3)
+	      CheckpointValList = Split(CheckpointVals, D4exD1)
+          game.checkpoints = NewStringDictionary()
+          for (xx, 0, ListCount(CheckpointKeyList)-1) {
+            key = ListItem(CheckpointKeyList,xx)
+            val = ListItem(CheckpointValList,xx)
+            DictionaryAdd (game.checkpoints, key, val)
+          }
+        }
+		// Update game.textprocessor_seen
+		if (ListCount(TextProcKeyValPairs)>0) {
+		  // Remember that game.textprocessor_seen should be a dictionary of lists
+		  SavedTProc = NewDictionary()
+		  foreach (kv, TextProcKeyValPairs) {
+			KListsContents = NewList()
+			KValList = Split(kv,D1)
+			key = ListItem(KValList,0)
+			lists = ListItem(KValList,1)
+			KListsString = Split(lists,D2)
+			foreach(listitem, KListsString) {
+			  list add (KListsContents, listitem)
+			}
+			DictionaryAdd (SavedTProc, key, KListsContents)
+		  }
+		  game.textprocessor_seen = SavedTProc
+		}
         // Create any objects noted in the CreatedList, if there are any, so their relevant attributes can be added without error...
         if (ListCount(CreatedList)>0) {
           foreach (o, CreatedList) {
@@ -635,18 +808,23 @@
 		// Some Type attributes will not be saved by SaveGameCode if they were still their default value at time of save. This means that Type attributes that have changed during gameplay may not be properly updated to their defaults on Load. For this reason, we need to set some of the most common Type attributes to defaults here.
 		// Set 'timesexamined' and 'hasbeenmoved' attributes to their defaults...
 		foreach (object, AllObjects()) {
-		  object.timesexamined = 0
-		  object.hasbeenmoved = False
+		  //object.timesexamined = 0
+		  object.timesexamined = null
+		  //object.hasbeenmoved = False
+		  object.hasbeenmoved = null
 		  if (Equal(object.isroom,True)) {
 		    // Set the 'visited' and 'dark' attribute of all rooms to their default value of False initially, so that they will be set to True only if they =True in the SaveCode, and not simply because they =True at time of load.
-		    object.visited = False
-		    object.dark = False
+		    //object.visited = False
+			object.visited = null
+		    //object.dark = False
+			object.dark = null
 		  }
 		}
 		// Similarly, for 'lightsource' and 'lightstrength' attributes on exits...
 		foreach (exit, AllExits()) {
 		  exit.lightsource = null
-		  exit.lightstrength = ""
+		  //exit.lightstrength = ""
+		  exit.lightstrength = null
 		}
         // Split the save code up into all objects. Then parse through the value of each object attribute
         SavedObjectList = Split(SaveCode, D1)
@@ -703,10 +881,16 @@
             if (att_value="") {
               att_value_obj = NewStringList()
             }
+			else if (fullname="game.SaveLoadCode_firsttimetrigger") {
+			  //Special behavior to parse game.SaveLoadCode_firsttimetrigger
+			  D3ex=D3+"$$&$$&$$"+D3
+			  att_value_obj = Split (att_value, D3ex)
+			}
             else {
-              att_value_obj = Split (att_value, D3)
+			  // The way stringlists get saved when they're converted with ToString, they'll actually be delimited with "; " by default, not just ";"
+              att_value_obj = Split (att_value, D3+" ")
               // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
-              list remove (att_value_obj, " ")
+			  list remove (att_value_obj, "")
             }
           }
           else if (att_datatype="objectlist") {
@@ -933,7 +1117,9 @@
                 set (object, attributename, att_value)
               }
               else {
-                error ("ERROR: Unsupported object type detected in SaveCode: "+fullname+" of "+att_datatype+" datatype.")
+                // Change cursor back to normal when done
+	            JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+				error ("ERROR: Unsupported object type detected in SaveCode: "+fullname+" of "+att_datatype+" datatype.")
               }
               if (HasAttribute (object, cha)) {
                 // If a change script exists for this attribute, set change script back to original value after attribute has been changed
@@ -989,7 +1175,9 @@
                   }
                 }
                 else {
-                  error ("ERROR: Unsupported datatype found in "+objectname+"."+attributename+"! Datatype '"+LType+"' not supported!")
+                  // Change cursor back to normal when done
+	              JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
+				  error ("ERROR: Unsupported datatype found in "+objectname+"."+attributename+"! Datatype '"+LType+"' not supported!")
                 }
                 DictionaryAdd (LDictionary, Lkey, Lval)
               }
@@ -1017,6 +1205,8 @@
           }
         }
         msg ("Load complete!")
+		// Change cursor back to normal when done
+	    JS.eval("$('div.ui-widget-overlay.ui-front').css('cursor', '');")
         if (DebugMode) {
           msg ("Created objects: "+CreatedObjDebugList)
           msg ("Destroyed objects: "+DestroyedObjDebugList)
@@ -1035,6 +1225,7 @@
           // Replace screen contents with those from savestring. Currently stored in the "ScreenContents" variable
           JS.ReplaceScreenHTMLContent (ScreenContents)
           JS.updateLocation (LocationText)
+		  JS.eval ("$('#divOutput').css('min-height', '100%');")
           // Run any post-load scripts
           if (HasAttribute (game, "AfterLoadCodeScript")) {
             invoke (game.AfterLoadCodeScript)
@@ -1260,28 +1451,75 @@
     SaveString = SaveString+"game"+D2+"timeelapsed"+D2+"int"+D2+ToString(game.timeelapsed)+D1
     // Check if game.SaveAtts and/or game.SaveTimers exists.
     // game.SaveAtts is expected to be a stringlist containing a list of game attributes to save.
-    if (HasAttribute (game, "SaveAtts")) {
-      SaveAttType = TypeOf(game.SaveAtts)
-      if (SaveAttType="stringlist") {
-        if (ListCount(game.SaveAtts)>0) {
-          foreach (x, game.SaveAtts) {
-            SkipGameAtt = False
-            if (HasAttribute (game, "CheckAttExclude")) {
-              // Check if the attribute is one of the ones on "CheckAttExclude" stringlist. If it is, then DON'T save it in the checkpoint.
-              CheckAttType = TypeOf(game.CheckAttExclude)
-              if (CheckAttType="stringlist") {
-                if (ListContains(game.CheckAttExclude,x)) {
-                  SkipGameAtt = True
-                }
+    if (not HasAttribute (game, "SaveAtts")) {
+	  // If SaveAtts does not already exist, we are going to create it so we can add several game attributes we want to save by-default
+	  game.SaveAtts = NewStringList()
+	}
+	SaveAttType = TypeOf(game.SaveAtts)
+    if (SaveAttType="stringlist") {
+	  // Add some game attributes that we want by-default
+      if (not ListContains(game.SaveAtts, "lastlinkid")) {
+	    list add (game.SaveAtts, "lastlinkid")
+	  }
+	  if (not ListContains(game.SaveAtts, "lastoutputsection")) {
+	    list add (game.SaveAtts, "lastoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "currentturnoutputsection")) {
+        list add (game.SaveAtts, "currentturnoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "lastturnoutputsection")) {
+	    list add (game.SaveAtts, "lastturnoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "lastobjects")) {
+	    list add (game.SaveAtts, "lastobjects")
+	  }
+	  if (not ListContains(game.SaveAtts, "menuoptionskeys")) {
+        list add (game.SaveAtts, "menuoptionskeys")
+	  }
+	  if (not ListContains(game.SaveAtts, "menuoutputsection")) {
+	    list add (game.SaveAtts, "menuoutputsection")
+	  }
+	  if (not ListContains(game.SaveAtts, "SaveLoadCode_firsttimetrigger")) {
+	    list add (game.SaveAtts, "SaveLoadCode_firsttimetrigger")
+	  }
+	  // list add (game.SaveAtts, "menucallback") // To Do - This is the key to having a menu work when loading onto an active menu. It's a script attribute (set by the ShowMenu function, actually). So if I can figure out how to update a script attribute in-game, I can update this...
+	  if (not ListContains(game.SaveAtts, "menuallowcancel")) {
+	    list add (game.SaveAtts, "menuallowcancel")
+	  }
+	  if (not ListContains(game.SaveAtts, "disambiguating")) {
+        list add (game.SaveAtts, "disambiguating")
+	  }
+      if (ListCount(game.SaveAtts)>0) {
+        foreach (x, game.SaveAtts) {
+          SkipGameAtt = False
+          if (HasAttribute (game, "CheckAttExclude")) {
+           // Check if the attribute is one of the ones on "CheckAttExclude" stringlist. If it is, then DON'T save it in the checkpoint.
+            CheckAttType = TypeOf(game.CheckAttExclude)
+            if (CheckAttType="stringlist") {
+              if (ListContains(game.CheckAttExclude,x)) {
+                SkipGameAtt = True
               }
             }
-            if (not SkipGameAtt) {
-              AttValue = GetAttribute (game, x)
+          }
+          if (not SkipGameAtt) {
+            AttValue = GetAttribute (game, x)
+			if (not Equal(AttValue,null)) {
               att_datatype = TypeOf(AttValue)
 			  fullname = "game."+x
 	          if (att_datatype="object") {
                 att_value = AttValue.name
               }
+			  else if (x="SaveLoadCode_firsttimetrigger") {
+			    // Save game.SaveLoadCode_firsttimetrigger differently than other stringlists since it's too easy for ";" to accidentally appear in it
+			    // Use different delimiter
+			    D3ex=D3+"$$&$$&$$"+D3
+			    firsttimeString = ""
+			    foreach (d, AttValue) {
+			      firsttimeString = firsttimeString + d + D3ex
+			    }
+			    // Remove final D3ex from end and save
+		        att_value = Left(firsttimeString, LengthOf(firsttimeString)-LengthOf(D3ex))
+			  }
               else if (att_datatype="stringlist" or att_datatype="objectlist") {
                 X = ToString(AttValue)
                 // Cut off the "List: " string that preceeds its values when you use the ToString() command
@@ -1348,7 +1586,7 @@
       else {
         error ("ERROR: game.SaveAtts expected to be a stringlist containing a list of game attributes to save. Instead, game.SaveAtts found is of datatype: "+SaveAttType)
       }
-    }
+	}
     // game.SaveTimers is expected to be an stringlist containing a list of the names of all timers in the game that the author wants to save (ideally, all timers in the game).
     if (HasAttribute (game, "SaveTimers")) {
       SaveAttType = TypeOf(game.SaveTimers)
@@ -1435,6 +1673,32 @@
     // Cut off the "List: " string that preceeds its values when you use the ToString() command
     DestroyedObjStr = Right(X,LengthOf(X)-LengthOf("List: "))
     SaveString = SaveString+D4+CreatedObjStr+D1+DestroyedObjStr
+	// Special logic to save game.textprocessor_seen. Needed to properly capture {once:} and {notfirst:} triggers
+	// Populate TextProcSaveString empty string in case no game.textprocessor_seen found, or it is empty
+	TextProcSaveString = ""
+	if (HasAttribute(game,"textprocessor_seen")) {
+	  if (DictionaryCount(game.textprocessor_seen)>0) {
+	    // game.textprocessor_seen should be a dictionary of lists
+	    // Pattern: Key1|D1|List1Val1|D2|List1Val2|D2|List1Val3|D2exD1|Key2|D1|List2Val1...
+	    D2exD1 = D2+"$&&$"+D1
+	    TextProcessorSeen = game.textprocessor_seen
+	    TextProcSaveString = ""
+	    foreach (Textkey, TextProcessorSeen) {
+	      TextProcSaveString = TextProcSaveString+Textkey+D1
+		  TextProcList = DictionaryItem(TextProcessorSeen, Textkey)
+		  foreach (Textval, TextProcList) {
+            TextProcSaveString = TextProcSaveString+Textval+D2
+		  }
+		  // Remove final D2 from end
+		  TextProcSaveString = Left(TextProcSaveString, LengthOf(TextProcSaveString)-LengthOf(D2))
+		  // Add D2exD1 delimiter to end to separate from next key
+		  TextProcSaveString = TextProcSaveString+D2exD1
+	    }
+	    // Remove final D2exD1 from end
+	    TextProcSaveString = Left(TextProcSaveString, LengthOf(TextProcSaveString)-LengthOf(D2exD1))
+	  }
+	}
+	SaveString = SaveString+D4+TextProcSaveString
     // Append the end of the SaveString with the delimiters used, so LoadGame() knows what delimiter maps to what...
     SaveString = SaveString+D1+D2+D3+D4
     // msg for Debugging:
@@ -1490,15 +1754,15 @@
     CreatedObjDebugList = ""
     DestroyedObjDebugList = ""
     // Separate HTML screen contents from end of SaveGameCodeDecoded
-    SaveCodeAndScreenList = Split(SaveGameCodeDecoded, "@@&%&@@")
-    // There should only be two instances where "@@&%&@@" shows up in the savestring: first is to delimit the HTML screen contents, second to delimit the Location text. If it shows up more than twice, then there will be issues...
+    SaveCodeAndScreenList = Split(SaveGameCodeDecoded, "@@$%$@@")
+    // There should only be two instances where "@@$%$@@" shows up in the savestring: first is to delimit the HTML screen contents, second to delimit the Location text. If it shows up more than twice, then there will be issues...
     if (ListCount(SaveCodeAndScreenList)=3) {
       SaveGameCodeDecodedA = ListItem(SaveCodeAndScreenList,0)
       ScreenContents = ListItem(SaveCodeAndScreenList,1)
       LocationText = ListItem(SaveCodeAndScreenList,2)
     }
     else {
-      error ("ERROR: Banned delimiter '@@&%&@@' detected in savestring! Aborting load...")
+      error ("ERROR: Banned delimiter '@@$%$@@' detected in checkpoint savestring! Aborting load...")
     }
     // Retrieve delimiters from end of SaveGameCodeDecoded
     Dls = Right(SaveGameCodeDecodedA,4)
@@ -1508,7 +1772,13 @@
     D4 = Mid (Dls, 4, 1)
     // Remove delimiters from end of SaveGameCode
     SaveCode = Left(SaveGameCodeDecodedA, LengthOf(SaveGameCodeDecodedA)-(LengthOf(Dls)))
-    // Extract the Created/Destroyed object lists. The START of the created/destroyed section should be after the LAST D4 delimiter...
+	// Extract the game.textprocessor_seen parameter. The START of game.textprocessor_seen should be after the LAST D4 delimiter...
+    D2exD1 = D2+"$&&$"+D1
+	TextProcSeenInfo = Right(SaveCode, LengthOf(SaveCode)-InstrRev(SaveCode, D4))
+	TextProcKeyValPairs = Split(TextProcSeenInfo, D2exD1)
+	// Remove game.textprocessor_seen info list from end of SaveCode, also removing the final D4 delimiter...
+    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(TextProcSeenInfo)+1))
+    // Extract the Created/Destroyed object lists. The START of the created/destroyed section should be after the SECOND-TO-LAST D4 delimiter...
     CreatedDestroyedInfo = Right(SaveCode, LengthOf(SaveCode)-InstrRev(SaveCode, D4))
     if (DebugMode) {
       msg ("<br>CreatedDestroyedInfo: "+CreatedDestroyedInfo)
@@ -1520,20 +1790,22 @@
       CreatedList = NewStringList()
     }
     else {
-      CreatedList = Split (CSection, D3)
+	  // The way stringlists get saved when they're converted with ToString, they'll actually be delimited with "; " by default, not just ";"
+      CreatedList = Split (CSection, D3+" ")
       // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
-      list remove (CreatedList, " ")
+      list remove (CreatedList, "")
     }
     if (DSection="") {
       DestroyedList = NewStringList()
     }
     else {
-      DestroyedList = Split (DSection, D3)
+	  // The way stringlists get saved when they're converted with ToString, they'll actually be delimited with "; " by default, not just ";"
+      DestroyedList = Split (DSection, D3+" ")
       // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
-      list remove (DestroyedList, " ")
+      list remove (DestroyedList, "")
     }
-    // Remove Created/Destroyed list from end of SaveCode, also removing the final D1 and D4 delimiter...
-    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(CreatedDestroyedInfo)+2))
+    // Remove Created/Destroyed list from end of SaveCode, also removing the final D4 delimiter...
+    SaveCode = Left(SaveCode, LengthOf(SaveCode)-(LengthOf(CreatedDestroyedInfo)+1))
     // Extract the player.grid_coordinates info separately from the rest of the savecode. It has special rules for decoding it since it is a dictionary of dictionaries.
     GridGInfo = Right(SaveCode, LengthOf(SaveCode)-Instr(SaveCode, D4))
     if (DebugMode) {
@@ -1556,7 +1828,7 @@
     GameVerObjectEl = ListItem (GameInfo,1)
     GameVerElements = Split(GameVerObjectEl,D2)
     VersionString = ListItem (GameVerElements, 3)
-    Loaded_GameVersion = ToDouble(VersionString)
+    //Loaded_GameVersion = ToDouble(VersionString)
     GamePOVObjectEl = ListItem (GameInfo,2)
     GamePOVElements = Split(GamePOVObjectEl,D2)
     GamePOVName = ListItem (GamePOVElements, 3)
@@ -1571,8 +1843,24 @@
     }
     else {
       // Compare version of game in SaveCode to version of game loading it
-      ThisGame_GameVersion = ToDouble(game.version)
-      if (not TypeOf(OldestAllowedVersion)="double") {
+      // First convert the game.version to a double
+	  if (ListCount(Split(ToString(game.version),"."))>2) {
+	    // If there is a second decimal with additional numbering/characters, ignore everything after that second decimal 
+        ThisGame_GameVersion = ToDouble(Left(ToString(game.version),Instr(Instr(ToString(game.version),".")+1, ToString(game.version),".")-1))
+      }
+	  else {
+        ThisGame_GameVersion = ToDouble(game.version)
+      }
+	  // Do the same for the loaded game version...
+	  if (ListCount(Split(VersionString,"."))>2) {
+	    // If there is a second decimal with additional numbering/characters, ignore everything after that second decimal 
+        Loaded_GameVersion = ToDouble(Left(VersionString,Instr(Instr(VersionString,".")+1,VersionString,".")-1))
+      }
+	  else {
+        Loaded_GameVersion = ToDouble(VersionString)
+      }
+	  // Make sure the oldest allowed version is of type "double" as well
+	  if (not TypeOf(OldestAllowedVersion)="double") {
         OldestAllowedVersion_Double = ToDouble(OldestAllowedVersion)
       }
       else {
@@ -1585,16 +1873,33 @@
           Proceed = True
         }
         else {
-          error ("ERROR: The SaveCode you are attempting to load is from an INCOMPATIBLE older game version, and thus cannot be loaded by this version of the game.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Oldest Compatible Version: v"+ToString(OldestAllowedVersion)+"<br><br>Loading aborted...")
+          error ("ERROR: The SaveCheckpoint you are attempting to load is from an INCOMPATIBLE older game version, and thus cannot be loaded by this version of the game.<br>Saved Checkpoint: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Oldest Compatible Version: v"+ToString(OldestAllowedVersion)+"<br><br>Loading aborted...")
         }
       }
       else if (Loaded_GameVersion>ThisGame_GameVersion) {
-        error ("ERROR: The SaveCode you are attempting to load is from a newer version of this game and is not compatible.<br>Saved Game: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Please try a different SaveCode or use an updated game file.<br><br>Load aborted.")
+        error ("ERROR: The SaveCheckpoint you are attempting to load is from a newer version of this game and is not compatible.<br>Saved Checkpoint: v"+ToString(Loaded_GameVersion)+"<br>This Game: v"+ToString(ThisGame_GameVersion)+"<br>Please try a different SaveCode or use an updated game file.<br><br>Load aborted.")
       }
       else {
         Proceed = True
       }
       if (Proceed=True) {
+	    // Update game.textprocessor_seen
+		if (ListCount(TextProcKeyValPairs)>0) {
+		  // Remember that game.textprocessor_seen should be a dictionary of lists
+		  SavedTProc = NewDictionary()
+		  foreach (kv, TextProcKeyValPairs) {
+			KListsContents = NewList()
+			KValList = Split(kv,D1)
+			key = ListItem(KValList,0)
+			lists = ListItem(KValList,1)
+			KListsString = Split(lists,D2)
+			foreach(listitem, KListsString) {
+			  list add (KListsContents, listitem)
+			}
+			DictionaryAdd (SavedTProc, key, KListsContents)
+		  }
+		  game.textprocessor_seen = SavedTProc
+		}
         // Create any objects noted in the CreatedList, if there are any, so their relevant attributes can be added without error...
         if (ListCount(CreatedList)>0) {
           foreach (o, CreatedList) {
@@ -1612,18 +1917,23 @@
 		// Some Type attributes will not be saved by SaveGameCode if they were still their default value at time of save. This means that Type attributes that have changed during gameplay may not be properly updated back to their defaults on Load. For this reason, we need to set some of the most common Type attributes to defaults here.
 		// Set 'timesexamined' and 'hasbeenmoved' attributes to their defaults...
 		foreach (object, AllObjects()) {
-		  object.timesexamined = 0
-		  object.hasbeenmoved = False
+		  //object.timesexamined = 0
+		  object.timesexamined = null
+		  //object.hasbeenmoved = False
+		  object.hasbeenmoved = null
 		  if (Equal(object.isroom,True)) {
 		    // Set the 'visited' and 'dark' attribute of all rooms to their default value of False initially, so that they will be set to True only if they =True in the SaveCode, and not simply because they =True at time of load.
-		    object.visited = False
-		    object.dark = False
+		    //object.visited = False
+			object.visited = null
+		    //object.dark = False
+			object.dark = null
 		  }
 		}
 		// Similarly, for 'lightsource' and 'lightstrength' attributes on exits...
 		foreach (exit, AllExits()) {
 		  exit.lightsource = null
-		  exit.lightstrength = ""
+		  //exit.lightstrength = ""
+		  exit.lightstrength = null
 		}
         // Split the save code up into all objects. Then parse through the value of each object attribute
         SavedObjectList = Split(SaveCode, D1)
@@ -1680,10 +1990,16 @@
             if (att_value="") {
               att_value_obj = NewStringList()
             }
+			else if (fullname="game.SaveLoadCode_firsttimetrigger") {
+			  //Special behavior to parse game.SaveLoadCode_firsttimetrigger
+			  D3ex=D3+"$$&$$&$$"+D3
+			  att_value_obj = Split (att_value, D3ex)
+			}
             else {
-              att_value_obj = Split (att_value, D3)
+              // The way stringlists get saved when they're converted with ToString, they'll actually be delimited with "; " by default, not just ";"
+              att_value_obj = Split (att_value, D3+" ")
               // The way the lists are saved, when you load it, a blank entry will be created. Let's remove that...
-              list remove (att_value_obj, " ")
+              list remove (att_value_obj, "")
             }
           }
           else if (att_datatype="objectlist") {
@@ -2010,6 +2326,7 @@
         // Replace screen contents with those from savestring. Currently stored in the "ScreenContents" variable
         JS.ReplaceScreenHTMLContent (ScreenContents)
         JS.updateLocation (LocationText)
+		JS.eval ("$('#divOutput').css('min-height', '100%');")
         // Run any post-load scripts
         if (HasAttribute (game, "AfterLoadCodeScript")) {
           invoke (game.AfterLoadCodeScript)
@@ -2057,8 +2374,8 @@
     list add (DelimList, D3)
     list add (DelimList, D4)
     // Add special delims used by SaveLoadJavaCode.js as well
-    list add (DelimList, "@@&%&@@")
-    list add (DelimList, "!@@&%&@@!")
+	list add (DelimList, "@@$%$@@")
+    list add (DelimList, "!@@$%$@@!")
     // Return the list of delimiters as a string list
     return (DelimList)
 ]]></function>
@@ -2066,12 +2383,69 @@
 <function name="SaveLoadCode_StoreCheckpoint" parameters="CheckpointSaveString"><![CDATA[
     // This function should only be called by the SaveLoadJavaCode.js Javascript function "JS.SaveCheckpoint"
     // First, extract the CheckpointName
-    L = Split(CheckpointSaveString, "!@@&%&@@!")
+    L = Split(CheckpointSaveString, "!@@$%$@@!")
     SaveString = ListItem (L, 0)
     CheckpointName = ListItem (L, 1)
     // Add to game.checkpoints dictionary
     DictionaryAdd (game.checkpoints, CheckpointName, SaveString)
 ]]></function>
+
+<function name="first_timeSLC" parameters="idString, firstscript">
+  if (not HasAttribute(game, "SaveLoadCode_firsttimetrigger")) {
+    // Make it a string dictionary so SaveLoadCode can more easily parse it
+    game.SaveLoadCode_firsttimetrigger = NewStringList()
+  }
+  game.SLCfirstotherscript = firstscript
+  if (idString = "" or idString = null) {
+    // If user did not enter their own idString, then make the script itself the id
+    // uniqueid = SafeXML(ToString(firstscript))
+    uniqueid = ToString(firstscript)
+    // Replace newline characters
+    uniqueid = Replace (uniqueid, Chr(10), "")
+    uniqueid = Replace (uniqueid, Chr(13), "")
+  }
+  else {
+    uniqueid = ToString(idString)
+  }
+  if (not ListContains(game.SaveLoadCode_firsttimetrigger, uniqueid)) {
+    // Then this should be the first time this is triggering
+    list add (game.SaveLoadCode_firsttimetrigger, uniqueid)
+    // invoke (firstscript) // Using invoke() rather than do() seems to cause errors for whatever reason...
+    do (game, "SLCfirstotherscript")
+  }
+  else {
+    // Else, the script tied to this uniqueid has already triggered, don't run script
+  }
+  game.SLCfirstotherscript = null
+</function>
+<function name="other_wiseSLC" parameters="idString, otherscript">
+  if (not HasAttribute(game, "SaveLoadCode_firsttimetrigger")) {
+    // Make it a string dictionary so SaveLoadCode can more easily parse it
+    game.SaveLoadCode_firsttimetrigger = NewStringList()
+  }
+  game.SLCfirstotherscript = otherscript
+  if (idString = "" or idString = null) {
+    // If user did not enter their own idString, then make the script itself the id
+    // uniqueid = SafeXML(ToString(otherscript))
+    uniqueid = ToString(otherscript)
+    // Replace newline characters
+    uniqueid = Replace (uniqueid, Chr(10), "")
+    uniqueid = Replace (uniqueid, Chr(13), "")
+  }
+  else {
+    uniqueid = ToString(idString)
+  }
+  if (not ListContains(game.SaveLoadCode_firsttimetrigger, uniqueid)) {
+    // Then this is the first time this is triggering, DON'T run it
+    list add (game.SaveLoadCode_firsttimetrigger, uniqueid)
+  }
+  else {
+    // Else, this is the second (or more) time you're encountering this script. Run it.
+    // invoke (otherscript) // Using invoke() rather than do() seems to cause errors for whatever reason...
+    do (game, "SLCfirstotherscript")
+  }
+  game.SLCfirstotherscript = null
+</function>
 
 <javascript src="SaveLoadJavaCode.js" />
 </library>
