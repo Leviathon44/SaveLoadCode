@@ -60,3 +60,17 @@ v4.0:
         * D2 has been changed from `$` to `∏` 
         * D4 has been changed from `@` to `∑`
         * *D3 remains `;` as it is meant to be the delimiter used to separate lists, which is still `;` in Quest, by default*
+v5.0 ("Final" Version):
+* **BugFixes:**
+    * Fixed a major bug that was preventing checkpoints from persisting properly across SaveCodes. Should be working now.
+    
+    * The library will now properly save and persist whether `{once}` and `{notfirst}` textprocessor commands have triggered (stored by the built-in `game.textprocessor_seen` attribute)!
+
+* **New Features:**
+    * `SaveGameCode` and `SaveGameCheckpoint` now save additional game parameters by default (that get made in-game by the baseline Quest 5.8). See wiki for details if interested.
+
+    * `LoadGameCode` and `LoadGameCheckpoint` can now handle `game.version` entries with more than two decimal levels, (however they will still only compare the first two levels and ignore everything after the second decimal when determining compatibility). See Limitations section of wiki for more details.
+    
+    * Added `firsttimeSLC (idString) {script}` and `otherwiseSLC (idString) {script}` to replace the base `firsttime{}` and `otherwise{}`, making firsttime/otherwise capabilities compatible with the SaveLoadCode Library! **See install instructions and wiki for details on how to use!**
+        * Simply replace all existing "firsttime {" occurences with "first_timeSLC("") {" and replace all existing "otherwise {" occurences with "other_wiseSLC("") {" and it should work as long as no two firsttime or otherwise instances share the same code. 
+        * If two or more instances DO share the same code (comments do not count), simply add your own custom `idString` as input instead of an empty string. NOTE that first_timeSLC and other_wiseSLC pairs must EACH have their own DIFFERENT uniqueids for them to behave properly. Again, see the install instructions and wiki for further details.
