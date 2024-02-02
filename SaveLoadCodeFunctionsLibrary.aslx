@@ -6,7 +6,7 @@
 
   
   <!--
-  SaveLoadCode v5.0
+  SaveLoadCode v5.1
   Quest version: 5.8
   Written by: Leviathon, 2023
   
@@ -449,7 +449,8 @@
     // DO NOT APPEND THE SAVESTRING WITH ANY ADDITIONAL ATTRIBUTES BELOW THIS POINT. The game.pov.grid_coordinates, Created/Destroyed objectlist, and delimiters MUST be added on last in order for the LoadGame() Function to load properly.
     // Save the player.grid_coordinates so the player's map is saved. Because it is a dictionary of dictionaries, it must be saved in a special way...
     // grid_coordinates will be saved in form: "StuffBefore∂∑ObjectOwner∏MapAttributeName&%&Key1∏Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;∂Key2∏Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;Lkey3 = Lvalue3:type∂"
-    foreach (o, AllObjects()) {
+    MapDataFound=False
+	foreach (o, AllObjects()) {
       foreach (attributename, GetAttributeNames(o,false)) {
         objectname = o.name
         fullname = objectname+"."+attributename
@@ -457,7 +458,8 @@
         if (att_datatype="dictionary" and StartsWith(attributename,"saved_map_for_")) {
           // ASSUMES THAT ANY SAVED MAP DATA (for teleporting and keeping your map) STARTS WITH 'saved_map_for'. This follows the naming convention recommended by https://docs.textadventures.co.uk/quest/showing_a_map.html
           SaveString = SaveString + D4 + objectname + D2 + attributename + "&%&"
-          foreach (UKey, GetAttribute(o, attributename)) {
+          MapDataFound=True
+		  foreach (UKey, GetAttribute(o, attributename)) {
             SaveString = SaveString+UKey+D2
             UVal = DictionaryItem(GetAttribute(o, attributename), UKey)
             foreach (Lkey, UVal) {
@@ -471,7 +473,8 @@
         else if (att_datatype="dictionary" and attributename="grid_coordinates") {
           // Save the current map. Typically this is game.pov.grid_coordinates, but if player character can change, there may be multiple occurences of 'grid_coordinates'. Save them all.
           SaveString = SaveString + D4 + objectname + D2 + attributename + "&%&"
-          foreach (UKey, GetAttribute(o, attributename)) {
+          MapDataFound=True
+		  foreach (UKey, GetAttribute(o, attributename)) {
             SaveString = SaveString+UKey+D2
             UVal = DictionaryItem(GetAttribute(o, attributename), UKey)
             foreach (Lkey, UVal) {
@@ -484,6 +487,10 @@
         }
       }
     }
+	if (MapDataFound=False) {
+	  // If no MapDataFound, add a D4 delimiter to the end of the SaveString so an error isn't thrown later
+	  SaveString = SaveString + D4
+	}
     // Add on the list of created/destroyed objects...
     X = ToString(CreatedObj)
     // Cut off the "List: " string that preceeds its values when you use the ToString() command
@@ -1137,6 +1144,7 @@
           msg ("<br>AllSavedGrids: "+ToString(AllSavedGrids))
         }
         foreach (A, AllSavedGrids) {
+		  if (not Equal(A,"")) {
           UDictionary = NewDictionary()
           ItemAndValue = Split(A,"&%&")
           ObjAndAtt = ListItem(ItemAndValue,0)
@@ -1191,7 +1199,8 @@
             msg ("<br>"+objectname+"."+attributename+" UDictionary: "+ToString(UDictionary))
           }
           set (object, attributename, UDictionary)
-        }
+          }
+		}
         // Destroy any objects that the player destroyed during their saved game, if any
         if (ListCount(DestroyedList)>0) {
           foreach (o, DestroyedList) {
@@ -1630,7 +1639,8 @@
     // DO NOT APPEND THE SAVESTRING WITH ANY ADDITIONAL ATTRIBUTES BELOW THIS POINT. The game.pov.grid_coordinates, Created/Destroyed objectlist, and delimiters MUST be added on last in order for the LoadGame() Function to load properly.
     // Save the player.grid_coordinates so the player's map is saved. Because it is a dictionary of dictionaries, it must be saved in a special way...
     // grid_coordinates will be saved in form: "StuffBefore∂∑ObjectOwner∏MapAttributeName&%&Key1∏Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;∂Key2∏Lkey1 = Lvalue1:type;Lkey2 = Lvalue2:type;Lkey3 = Lvalue3:type∂"
-    foreach (o, AllObjects()) {
+    MapDataFound=False
+	foreach (o, AllObjects()) {
       foreach (attributename, GetAttributeNames(o,false)) {
         objectname = o.name
         fullname = objectname+"."+attributename
@@ -1638,7 +1648,8 @@
         if (att_datatype="dictionary" and StartsWith(attributename,"saved_map_for_")) {
           // ASSUMES THAT ANY SAVED MAP DATA (for teleporting and keeping your map) STARTS WITH 'saved_map_for'. This follows the naming convention recommended by https://docs.textadventures.co.uk/quest/showing_a_map.html
           SaveString = SaveString + D4 + objectname + D2 + attributename + "&%&"
-          foreach (UKey, GetAttribute(o, attributename)) {
+          MapDataFound=True
+		  foreach (UKey, GetAttribute(o, attributename)) {
             SaveString = SaveString+UKey+D2
             UVal = DictionaryItem(GetAttribute(o, attributename), UKey)
             foreach (Lkey, UVal) {
@@ -1652,7 +1663,8 @@
         else if (att_datatype="dictionary" and attributename="grid_coordinates") {
           // Save the current map. Typically this is game.pov.grid_coordinates, but if player character can change, there may be multiple occurences of 'grid_coordinates'. Save them all.
           SaveString = SaveString + D4 + objectname + D2 + attributename + "&%&"
-          foreach (UKey, GetAttribute(o, attributename)) {
+          MapDataFound=True
+		  foreach (UKey, GetAttribute(o, attributename)) {
             SaveString = SaveString+UKey+D2
             UVal = DictionaryItem(GetAttribute(o, attributename), UKey)
             foreach (Lkey, UVal) {
@@ -1665,6 +1677,10 @@
         }
       }
     }
+	if (MapDataFound=False) {
+	  // If no MapDataFound, add a D4 delimiter to the end of the SaveString so an error isn't thrown later
+	  SaveString = SaveString + D4
+	}
     // Add on the list of created/destroyed objects...
     X = ToString(CreatedObj)
     // Cut off the "List: " string that preceeds its values when you use the ToString() command
@@ -2244,6 +2260,7 @@
           msg ("<br>AllSavedGrids: "+ToString(AllSavedGrids))
         }
         foreach (A, AllSavedGrids) {
+		  if (not Equal(A,"")) {
           UDictionary = NewDictionary()
           ItemAndValue = Split(A,"&%&")
           ObjAndAtt = ListItem(ItemAndValue,0)
@@ -2296,7 +2313,8 @@
             msg ("<br>"+objectname+"."+attributename+" UDictionary: "+ToString(UDictionary))
           }
           set (object, attributename, UDictionary)
-        }
+          }
+		}
         // Destroy any objects that the player destroyed during their saved game, if any
         if (ListCount(DestroyedList)>0) {
           foreach (o, DestroyedList) {
