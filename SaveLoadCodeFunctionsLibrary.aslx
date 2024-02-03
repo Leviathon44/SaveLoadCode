@@ -782,7 +782,7 @@
           }
         }
 		// Update game.textprocessor_seen
-		if (ListCount(TextProcKeyValPairs)>0) {
+		if (ListCount(TextProcKeyValPairs)>0 and not Equal(ListItem(TextProcKeyValPairs,0),"")) {
 		  // Remember that game.textprocessor_seen should be a dictionary of lists
 		  SavedTProc = NewDictionary()
 		  foreach (kv, TextProcKeyValPairs) {
@@ -1900,7 +1900,7 @@
       }
       if (Proceed=True) {
 	    // Update game.textprocessor_seen
-		if (ListCount(TextProcKeyValPairs)>0) {
+		if (ListCount(TextProcKeyValPairs)>0 and not Equal(ListItem(TextProcKeyValPairs,0),"")) {
 		  // Remember that game.textprocessor_seen should be a dictionary of lists
 		  SavedTProc = NewDictionary()
 		  foreach (kv, TextProcKeyValPairs) {
